@@ -5,19 +5,32 @@ import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
+import InputField from "@/components/ui/common/InputField";
+import PrimaryButton from "@/components/ui/common/PrimaryButton";
+import BrandLogo from "@/components/ui/common/BrandLogo";
+import AuthIllustration from "@/components/ui/AuthIllustration";
+import { MAIN_COLOR } from "@/constants/colors";
+
 export default function LoginPage() {
   const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [checkBoxValue,setcheckBoxValue]=useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setLoading(true);
+    setError(null);
 
+    if (!checkBoxValue) {
+      setError("You must agree to the terms & policy");
+      setLoading(false);
+      return;
+    }
     const result = await signIn("credentials", {
       redirect: false,
       email,
@@ -31,104 +44,118 @@ export default function LoginPage() {
     }
 
     const session = await getSession();
+    if (!session?.user) return;
 
-    if (!session?.user) {
-      setError("Something went wrong");
-      setLoading(false);
-      return;
-    }
+    const roleRoutes: Record<string, string> = {
+      SUPERADMIN: "pages/superadmin/dashboard",
+      SCHOOLADMIN: "/schoolAdmin",
+      TEACHER: "/teachersPortal",
+      STUDENT: "/student",
+    };
 
-    switch (session.user.role) {
-      case "SUPERADMIN":
-        router.push("/admin/super");
-        break;
-      case "SCHOOLADMIN":
-        router.push("/schoolAdmin");
-        break;
-      case "TEACHER":
-        router.push("/teachersPortal");
-        break;
-      case "STUDENT":
-        router.push("/student");
-        break;
-      default:
-        router.push("/unauthorized");
-    }
-
+    router.push(roleRoutes[session.user.role] || "/unauthorized");
     setLoading(false);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-green-50">
-      <motion.form
-        onSubmit={handleLogin}
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-white shadow-xl p-10 rounded-2xl w-96 relative overflow-hidden"
-      >
-        <h2 className="text-3xl font-bold mb-6 text-center text-black">
-          Login
-        </h2>
+    <div className="min-h-screen flex bg-black">
+      <AuthIllustration />
 
-        {error && (
-          <p className="text-red-600 mb-4 text-center animate-pulse">{error}</p>
-        )}
+      <div className="flex flex-1 items-center justify-center px-6">
+        <motion.form
+          onSubmit={handleLogin}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md space-y-6"
+        >
+          <BrandLogo />
 
-        {/* Email Input */}
-        <div className="mb-4 relative">
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full border border-green-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 transition text-black placeholder-black"
+          <div>
+            <h1 className="text-2xl font-semibold text-white">Log In</h1>
+            <p className="text-sm text-gray-400 mt-2">
+              Enter your credentials to access your account
+            </p>
+          </div>
+
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+
+          <InputField
+            label="Email"
+            placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
           />
-        </div>
 
-        {/* Password Input */}
-        <div className="mb-6 relative">
-          <input
+          <InputField
+            label="Password"
             type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            className="w-full border border-green-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 transition pr-12 text-black placeholder-black"
+            placeholder="Enter password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
+            rightElement={
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-primary text-xs"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            }
           />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-3 text-black font-semibold"
-          >
-            {showPassword ? "Hide" : "Show"}
-          </button>
-        </div>
 
-        {/* Submit Button */}
-        <motion.button
-          type="submit"
-          disabled={loading}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold shadow-md hover:bg-green-700 transition"
-        >
-          {loading ? "Logging in..." : "Login"}
-        </motion.button>
+          <label className="flex items-center gap-2 cursor-pointer select-none relative">
+            <input
+              type="checkbox" value={checkBoxValue?"true":"false"}
+              onChange={(e) => setcheckBoxValue(e.target.checked)}
+              className="
+                peer
+                w-4 h-4
+                appearance-none 
+                bg-transparent
+                border border-white
+                rounded
+                cursor-pointer
+                transition
 
-        {/* Extra Animation */}
-        <motion.div
-          className="absolute -top-10 -right-10 w-32 h-32 bg-green-200 rounded-full opacity-30 animate-pulse"
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-        ></motion.div>
-        <motion.div
-          className="absolute -bottom-10 -left-10 w-40 h-40 bg-green-300 rounded-full opacity-20 animate-pulse"
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ repeat: Infinity, duration: 3 }}
-        ></motion.div>
-      </motion.form>
+                focus:outline-none
+              "
+            />
+
+            {/* Centered white tick */}
+            <svg
+              className="
+      absolute
+      left-0
+      top-0
+      w-4 h-4
+      p-[2px]
+      text-white
+      hidden
+      peer-checked:block
+      pointer-events-none
+    "
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              viewBox="2.3 0 20 20"
+            >
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+
+            <span className="text-sm text-gray-300 ml-1">
+              I agree to the terms & policy
+            </span>
+          </label>
+
+          <PrimaryButton title="Log In" loading={loading} />
+        </motion.form>
+      </div>
     </div>
   );
 }
+
+const styles = {
+  checkBox: {
+    accentColor: MAIN_COLOR,
+  },
+};
