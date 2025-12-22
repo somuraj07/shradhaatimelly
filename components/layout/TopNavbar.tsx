@@ -8,7 +8,7 @@ export default function TopNavbar() {
 
       {/* Right: Profile */}
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center border">
+        <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
           <FiUser className="text-gray-600 text-lg" />
         </div>
 

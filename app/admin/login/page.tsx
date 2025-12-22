@@ -47,7 +47,7 @@ export default function LoginPage() {
     if (!session?.user) return;
 
     const roleRoutes: Record<string, string> = {
-      SUPERADMIN: "frontend/superadmin/dashboard",
+      SUPERADMIN: "/frontend/superadmin/dashboard",
       SCHOOLADMIN: "/schoolAdmin",
       TEACHER: "/teachersPortal",
       STUDENT: "/student",
