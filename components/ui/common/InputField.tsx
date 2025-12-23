@@ -1,4 +1,4 @@
-import { MAIN_COLOR, WHITE_COLOR } from "@/constants/colors";
+import { MAIN_COLOR } from "@/constants/colors";
 
 interface InputFieldProps {
   label: string;
@@ -19,7 +19,7 @@ export default function InputField({
 }: InputFieldProps) {
   return (
     <div className="space-y-2">
-      <label className="text-sm text-gray-300">{label}</label>
+      <label className="text-sm text-black">{label}</label>
 
       <div className="relative">
         <input
@@ -27,17 +27,15 @@ export default function InputField({
           placeholder={placeholder}
           value={value}
           onChange={onChange}
-          style={{
-            borderColor: MAIN_COLOR,
-            color: WHITE_COLOR,
-          }}
           className="
             w-full
-            bg-transparent
+            bg-white
             border
             rounded-xl
             px-4 py-3
             text-sm
+            text-black
+            borderColor: black
             placeholder-gray-500
             focus:outline-none
             focus:ring-0
@@ -46,7 +44,7 @@ export default function InputField({
         />
 
         {rightElement && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm">
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-black">
             {rightElement}
           </div>
         )}
