@@ -11,6 +11,8 @@ import AddSchoolPage from "@/components/superadmin/addschool/page";
 
 import { SUPERADMIN_SIDEBAR_ITEMS } from "@/constants/superadmin/sidebar";
 import { useSearchParams } from "next/navigation";
+import SchoolsListPage from "@/components/superadmin/schoolsList/page";
+import TransactionsListPage from "@/components/superadmin/transactionsList/page";
 
 export default function SuperAdminLayout() {
   const searchParams = useSearchParams();
@@ -52,7 +54,7 @@ export default function SuperAdminLayout() {
     }
 
     if (tab === "schools") {
-      // return <SchoolsPage />;
+      return <SchoolsListPage />;
     }
 
     if (tab === "addschool") {
@@ -60,7 +62,7 @@ export default function SuperAdminLayout() {
     }
 
     if (tab === "transactions") {
-      // return <TransactionsPage />;
+      return <TransactionsListPage />
     }
 
     return null;
