@@ -55,3 +55,53 @@ body {
   animation: slideInLeft 0.35s ease-out both;
 }
 
+/* ===============================
+   GLOBAL DASHBOARD ANIMATIONS
+================================ */
+
+/* Base entrance from left */
+@keyframes dashboardEnter {
+  0% {
+    opacity: 0;
+    transform: translateX(-32px) scale(0.96);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(0) scale(1.01);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Container fade (page level) */
+@keyframes dashboardContainer {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ---------- Utilities ---------- */
+
+.animate-dashboard {
+  animation: dashboardEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-dashboard-container {
+  animation: dashboardContainer 0.3s ease-out both;
+}
+
+/* ---------- Stagger Support ---------- */
+[data-animate-item] {
+  animation: dashboardEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Delay based on index */
+[data-animate-item="1"] { animation-delay: 0.05s; }
+[data-animate-item="2"] { animation-delay: 0.1s; }
+[data-animate-item="3"] { animation-delay: 0.15s; }
+[data-animate-item="4"] { animation-delay: 0.2s; }
+[data-animate-item="5"] { animation-delay: 0.25s; }

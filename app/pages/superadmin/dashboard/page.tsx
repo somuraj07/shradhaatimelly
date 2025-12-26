@@ -66,7 +66,7 @@ export default function SuperAdminLayout() {
   };
 
   return (
-  <div className="h-screen flex flex-col">
+  <div className="h-screen flex flex-col animate-dashboard-container bg-[#f8fafc] min-h-screen">
   <TopNavbar />
   <div className="flex flex-1 overflow-hidden">
     <Sidebar menuItems={SUPERADMIN_SIDEBAR_ITEMS} />

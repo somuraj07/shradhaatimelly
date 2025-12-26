@@ -30,7 +30,7 @@ export default function SchoolAdminLayout() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 animate-dashboard-container bg-[#f8fafc] min-h-screen">
       {/* ========== DESKTOP SIDEBAR ========== */}
       <aside className="hidden md:block">
         <SchoolAdminSideBar menuItems={SCHOOLADMIN_MENU_ITEMS} />
