@@ -4,6 +4,11 @@ import { useState } from "react";
 import { toast } from "@/services/toast/toast.service";
 import { MAIN_COLOR } from "@/constants/colors";
 import InputField from "../common/InputField";
+import {
+  addStudent,
+  assignStudentsToClass,
+} from "@/services/schooladmin/students.service";
+import { useToastContext } from "@/services/toast/ToastContext";
 
 interface Props {
   classId: string;
@@ -11,12 +16,26 @@ interface Props {
   onSuccess: () => void;
 }
 
+type FormState = {
+  name: string;
+  email: string;
+  fatherName: string;
+  aadhaarNo: string;
+  phoneNo: string;
+  dob: string;
+  address: string;
+  totalFee: string;
+  discountPercent: string;
+};
+
+type Errors = Partial<Record<keyof FormState, string>>;
+
 export default function AddStudentModal({
   classId,
   onClose,
   onSuccess,
 }: Props) {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     name: "",
     email: "",
     fatherName: "",
@@ -27,89 +46,115 @@ export default function AddStudentModal({
     totalFee: "",
     discountPercent: "",
   });
-
+  const [errors, setErrors] = useState<Errors>({});
   const [loading, setLoading] = useState(false);
 
+  /* ---------------- Change Handler ---------------- */
+
   const handleChange =
-    (key: keyof typeof form) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm({ ...form, [key]: e.target.value });
+      setErrors((prev) => ({ ...prev, [key]: undefined }));
     };
 
-  const validateForm = () => {
-    if (!form.name.trim()) return "Student name is required";
-    if (!form.fatherName.trim()) return "Father name is required";
-    if (!form.aadhaarNo.trim()) return "Aadhaar number is required";
-    if (!form.phoneNo.trim()) return "Phone number is required";
-    if (!form.dob) return "Date of birth is required";
-    if (!form.totalFee) return "Total fee is required";
+  /* ---------------- Validation ---------------- */
 
-    if (isNaN(Number(form.totalFee)) || Number(form.totalFee) <= 0) {
-      return "Total fee must be a positive number";
-    }
+  const validateForm = (): boolean => {
+    const newErrors: Errors = {};
+
+    if (!form.name.trim() || form.name.length < 2)
+      newErrors.name = "Student name must be at least 2 characters";
+
+    if (form.email && !/^\S+@\S+\.\S+$/.test(form.email))
+      newErrors.email = "Invalid email format";
+
+    if (!form.fatherName.trim() || form.fatherName.length < 2)
+      newErrors.fatherName = "Father name must be at least 2 characters";
+
+    if (!/^\d{12}$/.test(form.aadhaarNo))
+      newErrors.aadhaarNo = "Aadhaar number must be exactly 12 digits";
+
+    if (!/^\d{10}$/.test(form.phoneNo))
+      newErrors.phoneNo = "Phone number must be exactly 10 digits";
+
+    if (!form.dob || new Date(form.dob) >= new Date())
+      newErrors.dob = "Please enter a valid date of birth";
+
+    if (!form.totalFee || Number(form.totalFee) <= 0)
+      newErrors.totalFee = "Total fee must be a positive number";
 
     if (
       form.discountPercent &&
-      (isNaN(Number(form.discountPercent)) ||
-        Number(form.discountPercent) < 0 ||
-        Number(form.discountPercent) > 100)
-    ) {
-      return "Discount percent must be between 0 and 100";
-    }
+      (Number(form.discountPercent) < 0 || Number(form.discountPercent) > 100)
+    )
+      newErrors.discountPercent = "Discount must be between 0 and 100";
 
-    return null;
+    if (form.address && form.address.length < 5)
+      newErrors.address = "Address must be at least 5 characters";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
-    const error = validateForm();
-    if (error) {
-      toast.error(error);
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
       setLoading(true);
 
-      const res = await fetch("/api/student/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email || undefined,
-          fatherName: form.fatherName,
-          aadhaarNo: form.aadhaarNo,
-          phoneNo: form.phoneNo,
-          dob: form.dob,
-          classId,
-          address: form.address || undefined,
-          totalFee: Number(form.totalFee),
-          discountPercent: form.discountPercent
-            ? Number(form.discountPercent)
-            : 0,
-        }),
+      const addStudentResponse: Response = await addStudent({
+        name: form.name,
+        email: form.email || undefined,
+        fatherName: form.fatherName,
+        aadhaarNo: form.aadhaarNo,
+        phoneNo: form.phoneNo,
+        dob: form.dob,
+        classId,
+        address: form.address || undefined,
+        totalFee: Number(form.totalFee),
+        discountPercent: form.discountPercent
+          ? Number(form.discountPercent)
+          : 0,
       });
+      const addStudentData = await addStudentResponse.json();
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.message || "Failed to add student");
+      if (addStudentResponse.status === 409) {
+        toast.error(addStudentData.message || "Conflict error");
         return;
       }
-
-      toast.success("Student added successfully");
+      if (!addStudentResponse.ok) {
+        toast.error(addStudentData.message || "Failed to add student");
+        return;
+      }
+      const assignStudentsToClassResponse: Response = await assignStudentsToClass(
+        addStudentData.student.id,
+        classId
+      );
+      const assignStudentsToClassData =
+        await assignStudentsToClassResponse.json(); 
+      if (!assignStudentsToClassResponse.ok) {
+        toast.error(
+          assignStudentsToClassData.message ||
+            "Failed to assign student to class"
+        );
+        return;
+      }
+      toast.success("Student added and assigned to class successfully");
       onSuccess();
       onClose();
-    } catch (err) {
-      toast.error("Something went wrong. Please try again.");
+    } catch (error) {
+      console.error("Error adding student", error);
     } finally {
       setLoading(false);
     }
   };
 
+  const renderError = (key: keyof Errors) =>
+    errors[key] && <p className="text-sm text-red-600">{errors[key]}</p>;
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl w-full max-w-2xl p-6 relative">
-        {/* Close */}
         <button
           onClick={onClose}
           className="absolute right-4 top-4 text-gray-400 hover:text-black"
@@ -117,81 +162,42 @@ export default function AddStudentModal({
           ✕
         </button>
 
-        {/* Title */}
-        <h2 className="text-lg font-semibold mb-6">
-          Add New Student
-        </h2>
+        <h2 className="text-lg font-semibold mb-6">Add New Student</h2>
 
-        {/* Form */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InputField
-            label="Student Name*"
-            placeholder="Enter Name"
-            value={form.name}
-            onChange={handleChange("name")}
-          />
-
-          <InputField
-            label="Email"
-            placeholder="Enter Email"
-            value={form.email}
-            onChange={handleChange("email")}
-          />
-
-          <InputField
-            label="Father Name*"
-            placeholder="Enter Father name"
-            value={form.fatherName}
-            onChange={handleChange("fatherName")}
-          />
-
-          <InputField
-            label="Aadhaar Number*"
-            placeholder="Enter Adadhaar"
-            value={form.aadhaarNo}
-            onChange={handleChange("aadhaarNo")}
-          />
-
-          <InputField
-            label="Phone Number*"
-            placeholder="Enter Phone No"
-            value={form.phoneNo}
-            onChange={handleChange("phoneNo")}
-          />
-
-          <InputField
-            label="Date of Birth*"
-            placeholder="Select DOB"
-            type="date"
-            value={form.dob}
-            onChange={handleChange("dob")}
-          />
-
-          <InputField
-            label="Total Fee*"
-            placeholder="Enter Total fee"
-            value={form.totalFee}
-            onChange={handleChange("totalFee")}
-          />
-
-          <InputField
-            label="Discount (%)"
-            placeholder="Enter discount"
-            value={form.discountPercent}
-            onChange={handleChange("discountPercent")}
-          />
+          {[
+            ["name", "Student Name*"],
+            ["email", "Email"],
+            ["fatherName", "Father Name*"],
+            ["aadhaarNo", "Aadhaar Number*"],
+            ["phoneNo", "Phone Number*"],
+            ["dob", "Date of Birth*"],
+            ["totalFee", "Total Fee*"],
+            ["discountPercent", "Discount (%)"],
+          ].map(([key, label]) => (
+            <div key={key}>
+              <InputField
+                label={label}
+                value={(form as any)[key]}
+                onChange={handleChange(key as keyof FormState)}
+                placeholder={key === "dob" ? "YYYY-MM-DD" : ""}
+                type={key === "dob" ? "date" : "text"}
+              />
+              {renderError(key as keyof Errors)}
+            </div>
+          ))}
         </div>
 
         <div className="mt-4">
           <InputField
-            placeholder="Enter Address"
             label="Address"
+            placeholder=""
             value={form.address}
             onChange={handleChange("address")}
           />
+          {renderError("address")}
         </div>
 
-        {/* Submit */}
         <button
           onClick={handleSubmit}
           disabled={loading}

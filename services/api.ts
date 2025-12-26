@@ -1,4 +1,6 @@
-export async function api<T>(url: string, options?: RequestInit): Promise<T> {
+import { toast } from "./toast/toast.service";
+
+export async function api(url: string, options?: RequestInit): Promise<Response> {
   const res = await fetch(url, {
     credentials: "include",
     ...options,
@@ -6,8 +8,9 @@ export async function api<T>(url: string, options?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const err = await res.json();
+    toast.error(err.message || "Something went wrong");
     throw new Error(err.message || "Something went wrong");
   }
 
-  return res.json();
+  return res;
 }

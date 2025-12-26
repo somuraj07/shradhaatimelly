@@ -4,6 +4,7 @@ interface SelectFieldProps {
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   options: any[];
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export default function SelectField({
@@ -12,6 +13,7 @@ export default function SelectField({
   onChange,
   options,
   placeholder = "Select option",
+  disabled=false
 }: SelectFieldProps) {
   return (
     <div className="space-y-2">
@@ -19,6 +21,7 @@ export default function SelectField({
 
       <div className="relative">
         <select
+          disabled={disabled}
           value={value}
           onChange={onChange}
           className={`

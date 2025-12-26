@@ -60,6 +60,41 @@ export async function POST(req: Request) {
       );
     }
 
+    // ---------------- UNIQUE EMAIL VALIDATION ----------------
+    if (email) {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          email,
+          schoolId,
+        },
+        select: { id: true },
+      });
+
+      if (existingUser) {
+        return NextResponse.json(
+          { message: "Email already exists in this school" },
+          { status: 409 }
+        );
+      }
+    }
+
+    if (aadhaarNo) {
+      const existingAadhaar = await prisma.user.findFirst({
+        where: {
+          student: { aadhaarNo },
+          schoolId,
+        },
+        select: { id: true },
+      });
+
+      if (existingAadhaar) {
+        return NextResponse.json(
+          { message: "Aadhaar number already exists in this school" },
+          { status: 409 }
+        );
+      }
+    }
+
     if (typeof totalFee !== "number" || totalFee <= 0) {
       return NextResponse.json(
         { message: "totalFee must be a positive number" },
@@ -138,7 +173,7 @@ export async function POST(req: Request) {
     );
   } catch (error: any) {
     console.error("Student creation error:", error);
-    
+
     // Handle transaction timeout errors
     if (error?.code === "P1008" || error?.message?.includes("transaction") || error?.message?.includes("timeout")) {
       return NextResponse.json(
@@ -146,7 +181,7 @@ export async function POST(req: Request) {
         { status: 408 }
       );
     }
-    
+
     // Handle Prisma unique constraint violations
     if (error?.code === "P2002") {
       const field = error?.meta?.target?.[0];
@@ -163,7 +198,7 @@ export async function POST(req: Request) {
         );
       }
     }
-    
+
     return NextResponse.json(
       { message: error?.message || "Internal server error" },
       { status: 500 }

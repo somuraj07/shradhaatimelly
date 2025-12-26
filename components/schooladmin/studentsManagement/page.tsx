@@ -26,20 +26,16 @@ export type Student = {
   user: { email: string; name: string; id: string };
 };
 
-export default function StudentsManagementPage() {
-  const [classes, setClasses] = useState<any[]>([]);
+export default function StudentsManagementPage({
+  classes,
+}: {
+  classes: any[];
+}) {
   const [selectedClass, setSelectedClass] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
 
   const { students, loading, refresh } = useStudents(selectedClass);
-
-  /* ---------------- Fetch Classes ---------------- */
-  useEffect(() => {
-    getClasses()
-      .then((res: any) => setClasses(res.classes || []))
-      .catch(() => toast.error("Failed to load classes"));
-  }, []);
 
   const selectedClassObj = classes.find((c) => c.id === selectedClass);
 
@@ -65,7 +61,10 @@ export default function StudentsManagementPage() {
       header: "Action",
       align: "left",
       render: () => (
-         <Trash2 size={16} className="text-gray-400 hover:text-red-500 cursor-pointer"/>
+        <Trash2
+          size={16}
+          className="text-gray-400 hover:text-red-500 cursor-pointer"
+        />
       ),
     },
   ];
@@ -84,7 +83,15 @@ export default function StudentsManagementPage() {
       <div className="bg-white rounded-xl p-4 shadow-sm flex flex-col lg:flex-row gap-4 justify-between">
         {/* Select Class */}
         <div className="w-full lg:w-1/2">
-          <SelectField label="Select Class" value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} options={classes.map((c) => ({ name: `${c.name} - ${c.section}`,id: c.id }))} />
+          <SelectField
+            label="Select Class"
+            value={selectedClass}
+            onChange={(e) => setSelectedClass(e.target.value)}
+            options={classes.map((c) => ({
+              name: `${c.name} - ${c.section}`,
+              id: c.id,
+            }))}
+          />
         </div>
 
         {/* Bulk Upload */}
@@ -107,62 +114,62 @@ export default function StudentsManagementPage() {
       </div>
 
       {/* ================= Students Table ================= */}
-{/* ================= Students List ================= */}
-{!selectedClass ? (
-  <div className="bg-white rounded-xl p-8 text-center text-gray-500 shadow-sm">
-    Please select a class to view and manage students
-  </div>
-) : (
-  <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
-    {/* Header */}
-    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-      <div>
-        <h2 className="font-semibold">
-          Students in {selectedClassObj?.name} - {selectedClassObj?.section}
-        </h2>
-        <p className="text-sm text-gray-500">
-          Total: {students.length} students
-        </p>
-      </div>
-
-      <button
-        onClick={() => setShowAdd(true)}
-        style={{ backgroundColor: MAIN_COLOR }}
-        className="text-white px-4 py-2 rounded-lg text-sm w-full sm:w-auto"
-      >
-        + Add Student
-      </button>
-    </div>
-
-    {/* MOBILE VIEW */}
-    <div className="grid grid-cols-1 gap-4 md:hidden">
-      {loading ? (
-        <p className="text-center text-gray-400">Loading...</p>
-      ) : students.length === 0 ? (
-        <p className="text-center text-gray-400">No students found</p>
+      {/* ================= Students List ================= */}
+      {!selectedClass ? (
+        <div className="bg-white rounded-xl p-8 text-center text-gray-500 shadow-sm">
+          Please select a class to view and manage students
+        </div>
       ) : (
-        students.map((student, index) => (
-          <StudentMobileCard
-            key={student.id}
-            student={student}
-            index={index}
-          />
-        ))
+        <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <div>
+              <h2 className="font-semibold">
+                Students in {selectedClassObj?.name} -{" "}
+                {selectedClassObj?.section}
+              </h2>
+              <p className="text-sm text-gray-500">
+                Total: {students.length} students
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowAdd(true)}
+              style={{ backgroundColor: MAIN_COLOR }}
+              className="text-white px-4 py-2 rounded-lg text-sm w-full sm:w-auto"
+            >
+              + Add Student
+            </button>
+          </div>
+
+          {/* MOBILE VIEW */}
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+            {loading ? (
+              <p className="text-center text-gray-400">Loading...</p>
+            ) : students.length === 0 ? (
+              <p className="text-center text-gray-400">No students found</p>
+            ) : (
+              students.map((student, index) => (
+                <StudentMobileCard
+                  key={student.id}
+                  student={student}
+                  index={index}
+                />
+              ))
+            )}
+          </div>
+
+          {/* DESKTOP TABLE */}
+          <div className="hidden md:block">
+            <DataTable<Student>
+              columns={columns}
+              data={students}
+              loading={loading}
+              emptyText="No students found"
+            />
+          </div>
+        </div>
       )}
-    </div>
-
-    {/* DESKTOP TABLE */}
-    <div className="hidden md:block">
-      <DataTable<Student>
-        columns={columns}
-        data={students}
-        loading={loading}
-        emptyText="No students found"
-      />
-    </div>
-  </div>
-)}
-
 
       {/* ================= Modals ================= */}
       {showAdd && (

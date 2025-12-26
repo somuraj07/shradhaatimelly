@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
@@ -10,22 +10,61 @@ import DashboardTab from "@/components/schooladmin/dashboard/page";
 import { useDashboardData } from "@/hooks/useSchoolAdminDashboard";
 import SchoolAdminClassesPage from "@/components/schooladmin/classes/page";
 import StudentsManagementPage from "@/components/schooladmin/studentsManagement/page";
+import { getClasses } from "@/services/schooladmin/classes.service";
+import { toast } from "@/services/toast/toast.service";
+import { getTeachers } from "@/services/schooladmin/teachers.service";
 
 export default function SchoolAdminLayout() {
+  const [classes, setClasses] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const tab = useSearchParams().get("tab") ?? "dashboard";
-   const { loading, error, stats, attendance, workshops, news, reload } =
-  useDashboardData();
+  const { loading, error, stats, attendance, workshops, news, reload } =
+    useDashboardData();
+  const [teachers, setTeachers] = useState<any[]>([]);
+  const [loadingTeachers, setLoadingTeachers] = useState(false);
+
+  useEffect(() => {
+    setLoadingTeachers(true);
+    getTeachers()
+      .then(async (res: Response) => {
+        const data = await res.json();
+        setTeachers(data.teachers || []);
+      })
+      .catch(() => toast.error("Failed to load teachers"))
+      .finally(() => setLoadingTeachers(false));
+  }, []);
+
+  useEffect(() => {
+    getClasses()
+      .then(async (res: Response) => {
+        const data = await res.json();
+        setClasses(data.classes || []);
+      })
+      .catch(() => toast.error("Failed to load classes"));
+  }, []);
   const renderPage = () => {
     switch (tab) {
       case "students":
-        return <StudentsManagementPage />;
+        return <StudentsManagementPage classes={classes} />;
       case "classes":
-        return <SchoolAdminClassesPage />;
+        return <SchoolAdminClassesPage
+          teachers={teachers}
+          loadingTeachers={loadingTeachers}
+        />;
       case "payments":
-        // return <PaymentsTab />;
+      // return <PaymentsTab />;
       default:
-        return <DashboardTab loading={loading} stats={stats} attendance={attendance} workshops={workshops} news={news} reload={reload} error={error} />;
+        return (
+          <DashboardTab
+            loading={loading}
+            stats={stats}
+            attendance={attendance}
+            workshops={workshops}
+            news={news}
+            reload={reload}
+            error={error}
+          />
+        );
     }
   };
 
@@ -47,10 +86,7 @@ export default function SchoolAdminLayout() {
           </div>
 
           {/* Overlay */}
-          <div
-            className="flex-1 bg-black/40"
-            onClick={() => setOpen(false)}
-          />
+          <div className="flex-1 bg-black/40" onClick={() => setOpen(false)} />
         </div>
       )}
 

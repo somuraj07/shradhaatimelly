@@ -4,7 +4,7 @@ export const getStudents = (classId?: string) =>
   api(`/api/students${classId ? `?classId=${classId}` : ""}`);
 
 export const addStudent = (payload: any) =>
-  api("/api/students", {
+  api("/api/student/create", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -20,3 +20,10 @@ export const uploadStudentsCSV = (file: File, classId: string) => {
     body: formData,
   }).then(res => res.json());
 };
+
+export const assignStudentsToClass = (studentId: string, classId: string) =>
+  api("/api/student/assign-class", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ studentId, classId }),
+  });
