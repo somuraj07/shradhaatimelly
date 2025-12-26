@@ -1,4 +1,4 @@
-import CreateClassForm from "@/components/ui/common/SchoolAdminClassForm";
+import CreateClassForm from "@/components/ui/SchoolAdminClassForm";
 
 export default function SchoolAdminClassesPage() {
   return (

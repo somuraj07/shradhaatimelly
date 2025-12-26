@@ -18,19 +18,17 @@ export default function AddStudentModal({
 }: Props) {
   const [form, setForm] = useState({
     name: "",
-    rollNo: "",
-    dob: "",
-    age: "",
-    gender: "",
-    parentName: "",
-    phoneNo: "",
     email: "",
+    fatherName: "",
+    aadhaarNo: "",
+    phoneNo: "",
+    dob: "",
     address: "",
-    previousSchool: "",
-    aadharNo: "",
     totalFee: "",
-    discount: "",
+    discountPercent: "",
   });
+
+  const [loading, setLoading] = useState(false);
 
   const handleChange =
     (key: keyof typeof form) =>
@@ -38,12 +36,57 @@ export default function AddStudentModal({
       setForm({ ...form, [key]: e.target.value });
     };
 
+  const validateForm = () => {
+    if (!form.name.trim()) return "Student name is required";
+    if (!form.fatherName.trim()) return "Father name is required";
+    if (!form.aadhaarNo.trim()) return "Aadhaar number is required";
+    if (!form.phoneNo.trim()) return "Phone number is required";
+    if (!form.dob) return "Date of birth is required";
+    if (!form.totalFee) return "Total fee is required";
+
+    if (isNaN(Number(form.totalFee)) || Number(form.totalFee) <= 0) {
+      return "Total fee must be a positive number";
+    }
+
+    if (
+      form.discountPercent &&
+      (isNaN(Number(form.discountPercent)) ||
+        Number(form.discountPercent) < 0 ||
+        Number(form.discountPercent) > 100)
+    ) {
+      return "Discount percent must be between 0 and 100";
+    }
+
+    return null;
+  };
+
   const handleSubmit = async () => {
+    const error = validateForm();
+    if (error) {
+      toast.error(error);
+      return;
+    }
+
     try {
+      setLoading(true);
+
       const res = await fetch("/api/student/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, classId }),
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email || undefined,
+          fatherName: form.fatherName,
+          aadhaarNo: form.aadhaarNo,
+          phoneNo: form.phoneNo,
+          dob: form.dob,
+          classId,
+          address: form.address || undefined,
+          totalFee: Number(form.totalFee),
+          discountPercent: form.discountPercent
+            ? Number(form.discountPercent)
+            : 0,
+        }),
       });
 
       const data = await res.json();
@@ -55,8 +98,11 @@ export default function AddStudentModal({
 
       toast.success("Student added successfully");
       onSuccess();
+      onClose();
     } catch (err) {
-      toast.error("Failed to add student");
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -73,93 +119,86 @@ export default function AddStudentModal({
 
         {/* Title */}
         <h2 className="text-lg font-semibold mb-6">
-          Add New Student to Class
+          Add New Student
         </h2>
 
-        {/* Form Grid */}
+        {/* Form */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InputField
-            label="Name*"
-            placeholder="Enter student name"
+            label="Student Name*"
+            placeholder="Enter Name"
             value={form.name}
             onChange={handleChange("name")}
           />
 
           <InputField
-            label="Roll Number*"
-            placeholder="Enter roll number"
-            value={form.rollNo}
-            onChange={handleChange("rollNo")}
+            label="Email"
+            placeholder="Enter Email"
+            value={form.email}
+            onChange={handleChange("email")}
           />
 
           <InputField
-            label="Date of Birth"
-            type="date"
-            placeholder="mm/dd/yyyy"
-            value={form.dob}
-            onChange={handleChange("dob")}
+            label="Father Name*"
+            placeholder="Enter Father name"
+            value={form.fatherName}
+            onChange={handleChange("fatherName")}
           />
 
           <InputField
-            label="Age"
-            placeholder="Age"
-            value={form.age}
-            onChange={handleChange("age")}
+            label="Aadhaar Number*"
+            placeholder="Enter Adadhaar"
+            value={form.aadhaarNo}
+            onChange={handleChange("aadhaarNo")}
           />
 
           <InputField
-            label="Gender"
-            placeholder="Select gender"
-            value={form.gender}
-            onChange={handleChange("gender")}
-          />
-
-          <InputField
-            label="Parent Name"
-            placeholder="Parent name"
-            value={form.parentName}
-            onChange={handleChange("parentName")}
-          />
-
-          <InputField
-            label="Parent Contact"
-            placeholder="Phone number"
+            label="Phone Number*"
+            placeholder="Enter Phone No"
             value={form.phoneNo}
             onChange={handleChange("phoneNo")}
           />
 
           <InputField
-            label="Email"
-            placeholder="Email address"
-            value={form.email}
-            onChange={handleChange("email")}
+            label="Date of Birth*"
+            placeholder="Select DOB"
+            type="date"
+            value={form.dob}
+            onChange={handleChange("dob")}
+          />
+
+          <InputField
+            label="Total Fee*"
+            placeholder="Enter Total fee"
+            value={form.totalFee}
+            onChange={handleChange("totalFee")}
+          />
+
+          <InputField
+            label="Discount (%)"
+            placeholder="Enter discount"
+            value={form.discountPercent}
+            onChange={handleChange("discountPercent")}
           />
         </div>
 
-        {/* Full width fields */}
-        <div className="mt-4 space-y-4">
+        <div className="mt-4">
           <InputField
+            placeholder="Enter Address"
             label="Address"
-            placeholder="Address"
             value={form.address}
             onChange={handleChange("address")}
           />
-
-          <InputField
-            label="Previous School Attended"
-            placeholder="Previous school"
-            value={form.previousSchool}
-            onChange={handleChange("previousSchool")}
-          />
         </div>
 
-        {/* Footer Button */}
+        {/* Submit */}
         <button
           onClick={handleSubmit}
+          disabled={loading}
           style={{ backgroundColor: MAIN_COLOR }}
-          className="mt-6 w-full text-white py-3 rounded-xl font-medium"
+          className="mt-6 w-full text-white py-3 rounded-xl font-medium disabled:opacity-60"
         >
-          Add Student
+          {loading ? "Adding Student..." : "Add Student"}
         </button>
       </div>
     </div>
