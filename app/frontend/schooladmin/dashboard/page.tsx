@@ -1,6 +1,7 @@
 "use client";
 
 import SchoolAdminLayout from "@/app/pages/schooladmin/dashboard/page";
+import RequireRole from "@/components/RequireRole";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -16,8 +17,12 @@ export default function SuperAdminFinalPage() {
   }, [status, router]);
 
   if (status === "loading") {
-    return null; 
+    return null;
   }
 
-  return <SchoolAdminLayout />;
+  return (
+    <RequireRole allowedRoles={["SCHOOLADMIN"]}>
+      <SchoolAdminLayout />
+    </RequireRole>
+  );
 }

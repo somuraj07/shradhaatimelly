@@ -24,9 +24,9 @@ export default function DataTable<T>({
   emptyText = "No data found",
 }: DataTableProps<T>) {
   return (
-    <div className="overflow-hidden border border-gray-200 rounded-xl">
+    <div className="overflow-hidden border border-gray-200 rounded-xl animate-slide-in-left">
       <table className="w-full text-sm border-collapse">
-        {/* HEADER */}
+        {/* ================= HEADER ================= */}
         <thead
           style={{ backgroundColor: LIGHT_BG_COLOR }}
           className="text-black border-b border-gray-200"
@@ -35,7 +35,7 @@ export default function DataTable<T>({
             {columns.map((col, idx) => (
               <th
                 key={idx}
-                className={`p-3 text-${col.align ?? "left"} font-medium`}
+                className={`p-3 font-medium text-${col.align ?? "left"}`}
               >
                 {col.header}
               </th>
@@ -43,7 +43,7 @@ export default function DataTable<T>({
           </tr>
         </thead>
 
-        {/* BODY */}
+        {/* ================= BODY ================= */}
         <tbody>
           {loading ? (
             <tr>
@@ -67,7 +67,12 @@ export default function DataTable<T>({
             data.map((row, index) => (
               <tr
                 key={index}
-                className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50"
+                style={{ animationDelay: `${index * 60}ms` }}
+                className="
+                  border-b border-gray-200 last:border-b-0
+                  hover:bg-gray-50
+                  animate-slide-in-left
+                "
               >
                 {columns.map((col, colIndex) => (
                   <td
@@ -76,7 +81,7 @@ export default function DataTable<T>({
                   >
                     {col.render
                       ? col.render(row, index)
-                      : (row[col.accessor as keyof typeof row] as ReactNode)}
+                      : (row[col.accessor as keyof T] as ReactNode)}
                   </td>
                 ))}
               </tr>

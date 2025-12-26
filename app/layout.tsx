@@ -3,6 +3,8 @@ import "./globals.css";
 import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
 import Script from "next/script";
+import { ToastProvider } from "@/services/toast/ToastContext";
+import ToastBridge from "@/services/toast/ToastBridge";
 
 
 const poppins = Poppins({
@@ -29,8 +31,10 @@ export default function RootLayout({
           <Script
             src="https://checkout.razorpay.com/v1/checkout.js"
             strategy="beforeInteractive"
-          />
+          />  <ToastProvider>
+          <ToastBridge />
           {children}
+        </ToastProvider>
         </AuthProvider>
       </body>
     </html>

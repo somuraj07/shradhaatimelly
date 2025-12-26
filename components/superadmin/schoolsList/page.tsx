@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import DataTable from "@/components/ui/TableData";
 import { Column } from "@/components/ui/TableData";
 import Checkbox from "@/components/ui/common/checkbox";
-import { useDebounce } from "@/app/hooks/useDebounce";
+import { useDebounce } from "@/hooks/useDebounce";
 
 type School = {
   id: string;

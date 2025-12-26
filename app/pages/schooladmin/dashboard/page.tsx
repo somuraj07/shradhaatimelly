@@ -7,13 +7,9 @@ import { useSearchParams } from "next/navigation";
 import SchoolAdminSideBar from "@/components/layout/SchoolAdminSideBar";
 import { SCHOOLADMIN_MENU_ITEMS } from "@/constants/schooladmin/sidebar";
 import DashboardTab from "@/components/schooladmin/dashboard/page";
-import { useDashboardData } from "@/app/hooks/useSchoolAdminDashboard";
+import { useDashboardData } from "@/hooks/useSchoolAdminDashboard";
 import SchoolAdminClassesPage from "@/components/schooladmin/classes/page";
-
-// TAB VIEWS;
-// import StudentsTab from "./tabs/StudentsTab";
-// import ClassesTab from "./tabs/ClassesTab";
-// import PaymentsTab from "./tabs/PaymentsTab";
+import StudentsManagementPage from "@/components/schooladmin/studentsManagement/page";
 
 export default function SchoolAdminLayout() {
   const [open, setOpen] = useState(false);
@@ -23,7 +19,7 @@ export default function SchoolAdminLayout() {
   const renderPage = () => {
     switch (tab) {
       case "students":
-        // return <StudentsTab />;
+        return <StudentsManagementPage />;
       case "classes":
         return <SchoolAdminClassesPage />;
       case "payments":

@@ -39,3 +39,19 @@ body {
 .animate-fade-in {
   animation: fadeInLeft 0.45s ease forwards;
 }
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.35s ease-out both;
+}
+

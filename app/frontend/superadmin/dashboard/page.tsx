@@ -1,6 +1,7 @@
 "use client";
 
 import SuperAdminLayout from "@/app/pages/superadmin/dashboard/page";
+import RequireRole from "@/components/RequireRole";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -19,5 +20,9 @@ export default function SuperAdminFinalPage() {
     return null; 
   }
 
-  return <SuperAdminLayout />;
+  return (
+    <RequireRole allowedRoles={["SUPERADMIN"]}>
+      <SuperAdminLayout />
+    </RequireRole>
+  );
 }
