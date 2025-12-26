@@ -6,6 +6,7 @@ import SelectField from "@/components/ui/common/SelectField";
 import { MAIN_COLOR } from "@/constants/colors";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
+import { toast } from "@/services/toast/toast.service";
 
 interface Teacher {
   id: string;
@@ -112,12 +113,13 @@ export default function CreateClassForm() {
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to create class");
+      if (data.status!==201) {
+        toast.error(data.message || "Failed to create class");
+        return;
       }
 
       setSuccess("Class created successfully");
-
+      toast.success("Class created successfully");
       setClassName("");
       setSection("");
       setTeacherId("");
@@ -222,14 +224,14 @@ export default function CreateClassForm() {
             </motion.p>
           )}
 
-        {success && (
+        {/* {success && (
           <motion.p
             variants={itemVariants}
             className="text-sm text-green-600 text-center font-medium"
           >
             {success}
           </motion.p>
-        )}
+        )} */}
 
 
           {/* Submit */}
