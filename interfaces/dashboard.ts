@@ -33,3 +33,23 @@ export interface Teacher {
   mobile: string;
   subject: string;
 }
+
+export type FieldType =
+  | "text"
+  | "email"
+  | "password"
+  | "number"
+  | "textarea"
+  | "select"
+  | "date"
+  | "file";
+
+export interface FormField {
+  name: string;
+  label: string;
+  type: FieldType;
+  placeholder?: string;
+  required?: boolean;
+  options?: { label: string; value: string }[]; 
+}
+

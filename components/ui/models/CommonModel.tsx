@@ -24,13 +24,11 @@ export default function CommonModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Overlay */}
       <div
         className="absolute inset-0 bg-black/40"
         onClick={onClose}
       />
 
-      {/* Modal */}
       <div
         className={`
           relative bg-white rounded-xl shadow-xl
@@ -39,7 +37,6 @@ export default function CommonModal({
           animate-scale-in
         `}
       >
-        {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">
             {title}
@@ -52,12 +49,10 @@ export default function CommonModal({
           </button>
         </div>
 
-        {/* Body */}
         <div className="space-y-4">
           {children}
         </div>
 
-        {/* Footer (optional) */}
         {footer && (
           <div className="mt-6">
             {footer}

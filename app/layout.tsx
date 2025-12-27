@@ -6,7 +6,6 @@ import Script from "next/script";
 import { ToastProvider } from "@/services/toast/ToastContext";
 import ToastBridge from "@/services/toast/ToastBridge";
 
-
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
