@@ -1,19 +1,27 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
-type DashboardError =
-  | null
-  | {
-      message: string;
-      failedApis: string[];
-    };
+import { api } from "@/services/schooladmin/dashboard/dashboard.api";
+import { calculateTodayAttendance } from "@/services/schooladmin/dashboard/dashboard.utils";
+import { useEffect, useState, useCallback } from "react";
 
 export function useDashboardData() {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<DashboardError>(null);
+  const [error, setError] = useState<{
+    message: string;
+    failedApis: string[];
+  } | null>(null);
 
-  const [stats, setStats] = useState({
+  /* ---------------- BASE STATE ---------------- */
+  const [classes, setClasses] = useState<any[]>([]);
+  const [students, setStudents] = useState<any[]>([]);
+  const [teachers, setTeachers] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
+  const [news, setNews] = useState<any[]>([]);
+  const [attendanceRaw, setAttendanceRaw] = useState<any[]>([]);
+  const [teacherLeaves, setTeacherLeaves] = useState<any[]>([]);
+  const [teacherPendingLeaves, setTeacherPendingLeaves] = useState<any[]>([]);
+  const [feesCollected, setFeesCollected] = useState<number>(0);
+
+  /* ---------------- DERIVED STATE ---------------- */
+  const [stats, setStats] = useState<any>({
     totalClasses: 0,
     totalStudents: 0,
     totalTeachers: 0,
@@ -21,121 +29,179 @@ export function useDashboardData() {
     feesCollected: 0,
   });
 
-  const [attendance, setAttendance] = useState({
+  const [attendance, setAttendance] = useState<any>({
     student: { percent: 0, present: 0, absent: 0 },
     teacher: { percent: 0, onLeave: 0, present: 0 },
   });
 
-  const [workshops, setWorkshops] = useState<any[]>([]);
-  const [news, setNews] = useState<any[]>([]);
+  /* ---------------- DERIVED CALCULATIONS ---------------- */
 
-  useEffect(() => {
-    loadDashboard();
-  }, []);
+  const recalculateStats = useCallback(() => {
+    setStats({
+      totalClasses: classes.length,
+      totalStudents: students.length,
+      totalTeachers: teachers.length,
+      upcomingWorkshops: events.length,
+      feesCollected,
+    });
+  }, [classes, students, teachers, events, feesCollected]);
 
-  const safeFetch = async (url: string, name: string) => {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`${name} failed`);
-      return await res.json();
-    } catch {
-      return { __error: name };
-    }
-  };
+  const recalculateAttendance = useCallback(() => {
+    setAttendance(
+      calculateTodayAttendance(
+        attendanceRaw,
+        teachers,
+        teacherLeaves
+      )
+    );
+  }, [attendanceRaw, teachers, teacherLeaves]);
 
-  const loadDashboard = async () => {
+  /* ---------------- INITIAL LOAD ---------------- */
+
+  const loadAll = async () => {
     setLoading(true);
     setError(null);
 
-    const failedApis: string[] = [];
+    try {
+      const [
+        classesRes,
+        studentsRes,
+        teachersRes,
+        attendanceRes,
+        feesRes,
+        eventsRes,
+        newsRes,
+        leavesAll,
+        leavesPending,
+      ] = await Promise.all([
+        api.classes(),
+        api.students(),
+        api.teachers(),
+        api.attendance(),
+        api.fees(),
+        api.events(),
+        api.news(),
+        api.leavesAll(),
+        api.leavesPending(),
+      ]);
 
-    const [
-      classes,
-      students,
-      fees,
-      events,
-      newsData,
-      attendanceData,
-    ] = await Promise.all([
-      safeFetch("/api/class/list", "Classes"),
-      safeFetch("/api/student/list", "Students"),
-      safeFetch("/api/fees/summary", "Fees"),
-      safeFetch("/api/events/list", "Events"),
-      safeFetch("/api/newsfeed/list", "News"),
-      safeFetch("/api/attendance/view", "Attendance"),
-    ]);
-
-    // Track failures
-    [
-      classes,
-      students,
-      fees,
-      events,
-      newsData,
-      attendanceData,
-    ].forEach((res) => {
-      if (res?.__error) failedApis.push(res.__error);
-    });
-
-    /* -------------------- Stats -------------------- */
-    setStats({
-      totalClasses: classes?.classes?.length ?? 0,
-      totalStudents: students?.students?.length ?? 0,
-      totalTeachers: classes?.classes
-        ? new Set(
-            classes.classes.map((c: any) => c.teacherId).filter(Boolean)
-          ).size
-        : 0,
-      upcomingWorkshops: events?.events?.length ?? 0,
-      feesCollected: fees?.stats?.totalCollected ?? 0,
-    });
-
-    /* -------------------- Attendance -------------------- */
-    if (attendanceData?.attendances) {
-      const total = attendanceData.attendances.length;
-      const present = attendanceData.attendances.filter(
-        (a: any) => a.status === "PRESENT"
-      ).length;
-      const absent = attendanceData.attendances.filter(
-        (a: any) => a.status === "ABSENT"
-      ).length;
-
-      setAttendance({
-        student: {
-          percent: total ? Math.round((present / total) * 100) : 0,
-          present,
-          absent,
-        },
-        teacher: {
-          percent: 0,
-          onLeave: 0,
-          present: 0,
-        },
-      });
-    }
-
-    /* -------------------- Lists -------------------- */
-    setWorkshops(events?.events?.slice(0, 3) ?? []);
-    setNews(newsData?.newsFeeds?.slice(0, 3) ?? []);
-
-    /* -------------------- Error UI -------------------- */
-    if (failedApis.length) {
+      setClasses(classesRes?.classes ?? []);
+      setStudents(studentsRes?.students ?? []);
+      setTeachers(teachersRes?.teachers ?? []);
+      setAttendanceRaw(attendanceRes?.attendances ?? []);
+      setEvents(eventsRes?.events ?? []);
+      setNews(newsRes?.newsFeeds ?? []);
+      setTeacherLeaves(leavesAll ?? []);
+      setTeacherPendingLeaves(leavesPending ?? []);
+      setFeesCollected(feesRes?.stats?.totalCollected ?? 0);
+    } catch {
       setError({
-        message: "Some dashboard data failed to load",
-        failedApis,
+        message: "Failed to load dashboard data",
+        failedApis: ["Dashboard"],
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAll();
+  }, []);
+
+  /* ---------------- AUTO RECOMPUTE DERIVED STATE ---------------- */
+
+  useEffect(() => {
+    recalculateStats();
+  }, [recalculateStats]);
+
+  useEffect(() => {
+    recalculateAttendance();
+  }, [recalculateAttendance]);
+
+  /* ---------------- TAB-SCOPED RELOADS ---------------- */
+
+  const reloadDashboard = async () => {
+    try {
+      const [
+        classesRes,
+        studentsRes,
+        teachersRes,
+        attendanceRes,
+        feesRes,
+        eventsRes,
+        leavesAll,
+      ] = await Promise.all([
+        api.classes(),
+        api.students(),
+        api.teachers(),
+        api.attendance(),
+        api.fees(),
+        api.events(),
+        api.leavesAll(),
+      ]);
+
+      setClasses(classesRes?.classes ?? []);
+      setStudents(studentsRes?.students ?? []);
+      setTeachers(teachersRes?.teachers ?? []);
+      setAttendanceRaw(attendanceRes?.attendances ?? []);
+      setEvents(eventsRes?.events ?? []);
+      setTeacherLeaves(leavesAll ?? []);
+      setFeesCollected(feesRes?.stats?.totalCollected ?? 0);
+    } catch {
+      setError({
+        message: "Failed to reload dashboard",
+        failedApis: ["Dashboard"],
       });
     }
-
-    setLoading(false);
   };
+
+  const reloadClasses = async () => {
+    const res = await api.classes();
+    setClasses(res?.classes ?? []);
+  };
+
+  const reloadStudents = async () => {
+    const res = await api.students();
+    setStudents(res?.students ?? []);
+  };
+
+  const reloadTeachers = async () => {
+    const res = await api.teachers();
+    setTeachers(res?.teachers ?? []);
+  };
+
+  const reloadLeaves = async () => {
+    const [pending, all] = await Promise.all([
+      api.leavesPending(),
+      api.leavesAll(),
+    ]);
+    setTeacherPendingLeaves(pending ?? []);
+    setTeacherLeaves(all ?? []);
+  };
+
+  /* ---------------- RETURN ---------------- */
 
   return {
     loading,
     error,
+
+    // data
     stats,
     attendance,
-    workshops,
+    classes,
+    students,
+    teachers,
+    events,
     news,
-    reload: loadDashboard,
+    teacherLeaves,
+    teacherPendingLeaves,
+
+    // reloads
+    reloadAll: loadAll,
+    reloadDashboard,
+    reloadClasses,
+    reloadStudents,
+    reloadTeachers,
+    reloadLeaves,
   };
 }

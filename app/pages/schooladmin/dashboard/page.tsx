@@ -11,60 +11,55 @@ import { useDashboardData } from "@/hooks/useSchoolAdminDashboard";
 import TeachersPage from "@/components/schooladmin/teachers/page";
 import SchoolAdminClassesPage from "@/components/schooladmin/classes/page";
 import StudentsManagementPage from "@/components/schooladmin/studentsManagement/page";
-import { getClasses } from "@/services/schooladmin/classes.service";
-import { toast } from "@/services/toast/toast.service";
-import { getTeachers } from "@/services/schooladmin/teachers.service";
+import TeacherLeavesPage from "@/components/schooladmin/teachersleaves/page";
 
 export default function SchoolAdminLayout() {
-  const [classes, setClasses] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const tab = useSearchParams().get("tab") ?? "dashboard";
-  const { loading, error, stats, attendance, workshops, news, reload } =
-    useDashboardData();
-  const [teachers, setTeachers] = useState<any[]>([]);
-  const [loadingTeachers, setLoadingTeachers] = useState(false);
+  const {
+  loading,
+  stats,
+  attendance,
+  students,
+  teacherLeaves,
+  teacherPendingLeaves,
+  classes,
+  error,
+  events,
+  news,
+  teachers,
+  reloadDashboard,
+  reloadClasses,
+  reloadStudents,
+  reloadTeachers,
+  reloadLeaves,
+} = useDashboardData();
 
-  useEffect(() => {
-    setLoadingTeachers(true);
-    getTeachers()
-      .then(async (res: Response) => {
-        const data = await res.json();
-        setTeachers(data.teachers || []);
-      })
-      .catch(() => toast.error("Failed to load teachers"))
-      .finally(() => setLoadingTeachers(false));
-  }, []);
-
-  useEffect(() => {
-    getClasses()
-      .then(async (res: Response) => {
-        const data = await res.json();
-        setClasses(data.classes || []);
-      })
-      .catch(() => toast.error("Failed to load classes"));
-  }, []);
   const renderPage = () => {
     switch (tab) {
       case "students":
-        return <StudentsManagementPage classes={classes} />;
+        return <StudentsManagementPage 
+        classes={classes} 
+        reload={reloadStudents} />;
       case "classes":
         return <SchoolAdminClassesPage
           teachers={teachers}
-          loadingTeachers={loadingTeachers}
+          loadingTeachers={loading}
+          reload={reloadClasses}
         />;
       case "teachers":
-        return <TeachersPage />;
-      case "payments":
-      // return <PaymentsTab />;
+        return <TeachersPage teachers={teachers} reload={reloadTeachers} loading={loading} />;
+      case "teacher-leaves":
+        return <TeacherLeavesPage allLeaves={teacherLeaves} pending={teacherPendingLeaves} loading={loading} reload={reloadLeaves} />;
       default:
         return (
           <DashboardTab
             loading={loading}
             stats={stats}
             attendance={attendance}
-            workshops={workshops}
+            workshops={events}
             news={news}
-            reload={reload}
+            reload={reloadDashboard}
             error={error}
           />
         );

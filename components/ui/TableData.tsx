@@ -62,7 +62,7 @@ export default function DataTable<T>({
                 {emptyText}
               </td>
             </tr>
-          ) : (
+          ) : ( 
             data.map((row, index) => (
               <tr
                 key={index}

@@ -11,6 +11,7 @@ import SelectField from "@/components/ui/common/SelectField";
 import StudentMobileCard from "@/components/responsivescreens/schooladmin/StudentMobileCard";
 import AddStudentModal from "@/components/ui/models/AddStudentModal";
 import UploadCSVModal from "@/components/ui/models/UploadCsvDataModel";
+import { useDashboardData } from "@/hooks/useSchoolAdminDashboard";
 
 export type Student = {
   id: string;
@@ -28,14 +29,18 @@ export type Student = {
 
 export default function StudentsManagementPage({
   classes,
+  reload,
 }: {
   classes: any[];
+  reload: () => void;
 }) {
   const [selectedClass, setSelectedClass] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
 
   const { students, loading, refresh } = useStudents(selectedClass);
+
+  const {reloadDashboard}=useDashboardData();
 
   const selectedClassObj = classes.find((c) => c.id === selectedClass);
 
@@ -178,6 +183,8 @@ export default function StudentsManagementPage({
           onClose={() => setShowAdd(false)}
           onSuccess={() => {
             refresh();
+            reload();
+            reloadDashboard();
             setShowAdd(false);
           }}
         />
@@ -189,6 +196,8 @@ export default function StudentsManagementPage({
           onClose={() => setShowUpload(false)}
           onSuccess={() => {
             refresh();
+            reloadDashboard();
+            reload();
             setShowUpload(false);
           }}
         />

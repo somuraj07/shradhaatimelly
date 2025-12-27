@@ -13,8 +13,6 @@ interface Teacher {
   name: string;
 }
 
-/* ---------------- Animations ---------------- */
-
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -35,9 +33,10 @@ const itemVariants: Variants = {
 interface Props {
   teachers: Teacher[];
   loadingTeachers: boolean;
+  reload: () => void;
 }
 
-export default function CreateClassForm({ teachers, loadingTeachers }: Props) {
+export default function CreateClassForm({ teachers, loadingTeachers, reload }: Props) {
   const { show } = useToastContext();
 
   const [className, setClassName] = useState("");
@@ -64,7 +63,6 @@ export default function CreateClassForm({ teachers, loadingTeachers }: Props) {
     return Object.keys(errors).length === 0;
   };
 
-  /* ---------------- Submit ---------------- */
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -85,7 +83,7 @@ export default function CreateClassForm({ teachers, loadingTeachers }: Props) {
         });
 
         const data = await res.json();
-
+        reload();
         if (!res.ok) {
           show(data.message || "Failed to create class", "error");
           return;

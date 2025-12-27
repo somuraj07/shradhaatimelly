@@ -3,11 +3,13 @@ import CreateClassForm from "@/components/ui/SchoolAdminClassForm";
 interface Props {
   teachers: any[];
   loadingTeachers: boolean;
+  reload: () => void;
 }
 
 export default function SchoolAdminClassesPage({
   teachers,
   loadingTeachers,
+  reload,
 }: Props) {
   return (
     <div className="p-0">
@@ -20,6 +22,7 @@ export default function SchoolAdminClassesPage({
         <CreateClassForm
           teachers={teachers}
           loadingTeachers={loadingTeachers}
+          reload={reload}
         />
       </div>
     </div>

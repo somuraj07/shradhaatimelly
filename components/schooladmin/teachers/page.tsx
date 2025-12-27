@@ -10,27 +10,12 @@ import AddTeacherForm from "@/components/ui/AddTeacherForm";
 import { FiPlus, FiTrash, FiUser } from "react-icons/fi";
 import TeacherMobileCard from "@/components/responsivescreens/schooladmin/TeachersMobileCard";
 
-export default function TeachersPage() {
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function TeachersPage({teachers,reload,loading}:{
+  teachers:Teacher[];
+  loading:boolean;
+  reload:()=>void;
+}   ) {
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    fetchTeachers();
-  }, []);
-
-  const fetchTeachers = async () => {
-    try {
-      setLoading(true);
-      const res = await getTeachers();
-      const data = await res.json();
-      setTeachers(data.teachers || []);
-    } catch (error) {
-      console.error("Failed to load teachers", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const columns: Column<Teacher>[] = [
     {
@@ -113,7 +98,7 @@ export default function TeachersPage() {
         <AddTeacherForm
           onSuccess={() => {
             setOpen(false);
-            fetchTeachers();
+            reload();
           }}
         />
       </CommonModal>
