@@ -1,21 +1,90 @@
+import { MAIN_COLOR } from "@/constants/colors";
 import { useState } from "react";
+import { toast } from "@/services/toast/toast.service";
+import { assignStudentsToClass } from "@/services/schooladmin/students.service";
 
 export default function UploadCSVModal({ classId, onClose, onSuccess }: any) {
   const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (!file) {
+      toast.error("Please select a CSV file");
+      return;
+    }
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("classId", classId);
+    try {
+      setLoading(true);
 
-    await fetch("/api/students/upload", {
-      method: "POST",
-      body: formData,
-    });
+      /* ================= 1.BULK UPLOAD ================= */
 
-    onSuccess();
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const uploadRes = await fetch("/api/student/bulk-upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const uploadData = await uploadRes.json();
+
+      if (!uploadRes.ok) {
+        toast.error(uploadData.message || "Bulk upload failed");
+        return;
+      }
+
+      /* ================= 2.FETCH UNASSIGNED STUDENTS (FIX) ================= */
+
+      const studentsRes = await fetch("/api/student/list");
+      const studentsData = await studentsRes.json();
+
+      if (!studentsRes.ok || !Array.isArray(studentsData.students)) {
+        toast.error("Failed to fetch students");
+        return;
+      }
+
+      //  filter only unassigned students
+      const unassignedStudents = studentsData.students.filter(
+        (student: any) => !student.class
+      );
+
+      if (unassignedStudents.length === 0) {
+        toast.error("No unassigned students found");
+        return;
+      }
+
+      /* ================= 3.ASSIGN TO CLASS ================= */
+
+      for (const student of unassignedStudents) {
+        const assignRes = await assignStudentsToClass(
+          student.id,
+          classId
+        );
+
+        const assignData = await assignRes.json();
+
+        if (!assignRes.ok) {
+          toast.error(
+            assignData.message ||
+              `Failed to assign student ${student.user?.name || ""}`
+          );
+          return;
+        }
+      }
+
+      /* ================= SUCCESS ================= */
+
+      toast.success(
+        `${uploadData.createdCount} students added & assigned successfully`
+      );
+
+      onSuccess();
+      onClose();
+    } catch (err) {
+      toast.error("Something went wrong during bulk upload");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,19 +94,23 @@ export default function UploadCSVModal({ classId, onClose, onSuccess }: any) {
 
         <input
           type="file"
-          accept=".csv"
+          accept=".csv,.xlsx"
           onChange={(e) => setFile(e.target.files?.[0] || null)}
+          className="border border-gray-300 rounded-lg px-3 py-2 w-full"
         />
 
         <div className="flex justify-end gap-3 mt-4">
-          <button onClick={onClose} className="border px-4 py-2 rounded">
+          <button onClick={onClose} className="border px-4 py-2 rounded border-gray-300">
             Cancel
           </button>
+
           <button
             onClick={handleUpload}
-            className="bg-green-600 text-white px-4 py-2 rounded"
+            disabled={loading}
+            style={{ backgroundColor: MAIN_COLOR }}
+            className="text-white px-4 py-2 rounded disabled:opacity-60"
           >
-            Upload
+            {loading ? "Uploading..." : "Upload"}
           </button>
         </div>
       </div>

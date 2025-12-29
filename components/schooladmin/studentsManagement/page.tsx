@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import DataTable, { Column } from "@/components/ui/TableData";
-import { getClasses } from "@/services/schooladmin/classes.service";
 import { useStudents } from "@/hooks/schooladmin/useStudents";
 import { toast } from "@/services/toast/toast.service";
 import { Trash2 } from "lucide-react";
@@ -40,7 +39,7 @@ export default function StudentsManagementPage({
 
   const { students, loading, refresh } = useStudents(selectedClass);
 
-  const {reloadDashboard}=useDashboardData();
+  const { reloadDashboard } = useDashboardData();
 
   const selectedClassObj = classes.find((c) => c.id === selectedClass);
 
@@ -101,13 +100,17 @@ export default function StudentsManagementPage({
 
         {/* Bulk Upload */}
         <div className="w-full lg:w-1/2">
-          <label className="block text-sm font-medium mb-1">
+          <label className="text-sm text-black">
             Bulk Upload (CSV)
           </label>
           <div className="flex gap-2">
             <button
-              onClick={() => setShowUpload(true)}
-              className="flex-1 border rounded-lg px-3 py-2 text-sm"
+              onClick={() => {
+                !selectedClass
+                  ? toast.error("Please select a class first")
+                  : setShowUpload(true);
+              }}
+              className="flex-1 border rounded-lg px-3 py-2 text-sm h-11 border-gray-300"
             >
               ⬆ Upload CSV
             </button>

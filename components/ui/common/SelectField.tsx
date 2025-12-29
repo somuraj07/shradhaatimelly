@@ -28,6 +28,9 @@ export default function SelectField({
             w-full
             bg-white
             border
+            border-gray-300
+            disabled:bg-gray-100
+            disabled:cursor-not-allowed
             border-black
             rounded-xl
             px-4 py-3

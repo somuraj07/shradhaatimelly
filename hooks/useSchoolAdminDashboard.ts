@@ -1,3 +1,4 @@
+import { ITransferCertificate } from "@/interfaces/schooladmin";
 import { api } from "@/services/schooladmin/dashboard/dashboard.api";
 import { calculateTodayAttendance } from "@/services/schooladmin/dashboard/dashboard.utils";
 import { useEffect, useState, useCallback } from "react";
@@ -18,6 +19,8 @@ export function useDashboardData() {
   const [attendanceRaw, setAttendanceRaw] = useState<any[]>([]);
   const [teacherLeaves, setTeacherLeaves] = useState<any[]>([]);
   const [teacherPendingLeaves, setTeacherPendingLeaves] = useState<any[]>([]);
+  const [allTCRequests, setAllTCRequests] = useState<ITransferCertificate[]>([]);
+  const [pendingTCRequests, setPendingTCRequests] = useState<ITransferCertificate[]>([]);
   const [feesCollected, setFeesCollected] = useState<number>(0);
 
   /* ---------------- DERIVED STATE ---------------- */
@@ -73,6 +76,8 @@ export function useDashboardData() {
         newsRes,
         leavesAll,
         leavesPending,
+        tcRequestsAll,
+        tcRequestsPending
       ] = await Promise.all([
         api.classes(),
         api.students(),
@@ -83,6 +88,8 @@ export function useDashboardData() {
         api.news(),
         api.leavesAll(),
         api.leavesPending(),
+        api.tcRequestsAll(),
+        api.tcRequestsPending()
       ]);
 
       setClasses(classesRes?.classes ?? []);
@@ -94,6 +101,8 @@ export function useDashboardData() {
       setTeacherLeaves(leavesAll ?? []);
       setTeacherPendingLeaves(leavesPending ?? []);
       setFeesCollected(feesRes?.stats?.totalCollected ?? 0);
+      setAllTCRequests(tcRequestsAll.tcs ?? []);
+      setPendingTCRequests(tcRequestsPending.tcs ?? []);
     } catch {
       setError({
         message: "Failed to load dashboard data",
@@ -179,6 +188,15 @@ export function useDashboardData() {
     setTeacherLeaves(all ?? []);
   };
 
+  const reloadTCRequests = async () => {
+    const [pending,all]=await Promise.all([
+      api.tcRequestsPending(),
+      api.tcRequestsAll()
+    ]);
+    setPendingTCRequests(pending?.tcs ?? []);
+    setAllTCRequests(all?.tcs ?? []);
+  }
+
   /* ---------------- RETURN ---------------- */
 
   return {
@@ -195,6 +213,8 @@ export function useDashboardData() {
     news,
     teacherLeaves,
     teacherPendingLeaves,
+    tcRequestsAll: allTCRequests,
+    tcRequestsPending: pendingTCRequests,
 
     // reloads
     reloadAll: loadAll,
@@ -203,5 +223,6 @@ export function useDashboardData() {
     reloadStudents,
     reloadTeachers,
     reloadLeaves,
+    reloadTCRequests,
   };
 }

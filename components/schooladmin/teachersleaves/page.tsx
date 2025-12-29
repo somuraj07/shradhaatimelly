@@ -9,14 +9,17 @@ export default function TeacherLeavesPage({
   pending,
   reload,
   loading,
+  isTCApprovalsPage = false,
 }: {
   allLeaves: any[];
   pending: any[];
   loading: boolean;
+  isTCApprovalsPage?: boolean;
   reload: () => void;
 }) {
   const approved = allLeaves.filter((l) => l.status === "APPROVED");
-  const rejected = allLeaves.filter((l) => l.status === "REJECTED");
+  const rejected = allLeaves.filter((l) => l.status === "REJECTED");  
+  console.log(allLeaves, pending, approved, rejected);
 
   if (loading)
     return <div className="p-6 text-center text-gray-500">Loading...</div>;
@@ -34,9 +37,9 @@ export default function TeacherLeavesPage({
         rejected={rejected.length}
       />
 
-      <PendingLeavesTable data={pending} onAction={reload} />
+      <PendingLeavesTable data={pending} onAction={reload} isTCApprovalsPage={isTCApprovalsPage} />
 
-      <ProcessedLeavesTable data={[...approved, ...rejected]} />
+      <ProcessedLeavesTable data={[...approved, ...rejected]} isTCApprovalsPage={isTCApprovalsPage} />
     </div>
   );
 }

@@ -8,7 +8,13 @@ const formatDate = (date: string) =>
     year: "numeric",
   });
 
-export default function ProcessedLeavesTable({ data }: { data: any[] }) {
+export default function ProcessedLeavesTable({
+  data,
+  isTCApprovalsPage,
+}: {
+  data: any[];
+  isTCApprovalsPage?: boolean;
+}) {
   const columns = [
     {
       header: "Teacher",
@@ -42,6 +48,36 @@ export default function ProcessedLeavesTable({ data }: { data: any[] }) {
     },
   ];
 
+    const columnsForTCProcessedTable = [
+    {
+      header: "Student",
+      render: (row: any) => row.requestedBy?.name ?? "-",
+    },
+     {
+      header: "Class",
+      render: (row: any) =>
+        `${row.student?.class?.name}-${row.student?.class?.section}`,
+    },
+    {
+      header: "Reason",
+      render: (row: any) => row.reason,
+    },
+    {
+      header: "Status",
+      render: (row: any) => (
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-medium ${
+            row.status === "APPROVED"
+              ? "bg-green-100 text-green-700"
+              : "bg-red-100 text-red-700"
+          }`}
+        >
+          {row.status}
+        </span>
+      ),
+    },
+  ];
+
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4 overflow-x-auto">
       <h2 className="font-semibold mb-1">Processed Requests</h2>
@@ -49,7 +85,7 @@ export default function ProcessedLeavesTable({ data }: { data: any[] }) {
         History of approved and rejected requests
       </p>
 
-      <TableData columns={columns} data={data} />
+      <TableData columns={isTCApprovalsPage ? columnsForTCProcessedTable : columns} data={data} />
     </div>
   );
 }

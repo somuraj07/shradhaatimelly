@@ -12,14 +12,16 @@ const formatDate = (date: string) =>
 export default function PendingLeavesTable({
   data,
   onAction,
+  isTCApprovalsPage = false,
 }: {
   data: any[];
   onAction: () => void;
+  isTCApprovalsPage?: boolean;
 }) {
   const columns = [
     {
       header: "Teacher",
-      render: (row: any) => (row.teacher?.name ?? "-"),
+      render: (row: any) => row.teacher?.name ?? "-",
     },
     {
       header: "Leave Type",
@@ -37,7 +39,39 @@ export default function PendingLeavesTable({
       header: "Actions",
       render: (row: any) => (
         <div className="flex gap-2 min-w-[160px]">
-          <LeaveActionButtons id={row.id} onSuccess={onAction} />
+          <LeaveActionButtons id={row.id} onSuccess={onAction} isTCApprovalsPage={isTCApprovalsPage} />
+        </div>
+      ),
+    },
+  ];
+
+  const columnsForTCPendingsTable = [
+    {
+      header: "Student",
+      render: (row: any) => row.requestedBy.name,
+    },
+    {
+      header: "Class",
+      render: (row: any) =>
+        `${row.student?.class?.name}-${row.student?.class?.section}`,
+    },
+    {
+      header: "Roll No",
+      render: (row: any) => row.student?.class.rollNo ?? "-",
+    },
+    {
+      header: "Reason",
+      render: (row: any) => row.reason,
+    },
+    {
+      header: "Requested On",
+      render: (row: any) => formatDate(row.createdAt),
+    },
+    {
+      header: "Actions",
+      render: (row: any) => (
+        <div className="flex gap-2 min-w-[160px]">
+          <LeaveActionButtons id={row.id} onSuccess={onAction} isTCApprovalsPage={isTCApprovalsPage} />
         </div>
       ),
     },
@@ -50,7 +84,10 @@ export default function PendingLeavesTable({
         {data.length} requests waiting for approval
       </p>
 
-      <TableData columns={columns} data={data} />
+      <TableData
+        columns={isTCApprovalsPage ? columnsForTCPendingsTable : columns}
+        data={data}
+      />
     </div>
   );
 }

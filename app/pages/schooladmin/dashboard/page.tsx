@@ -18,40 +18,69 @@ export default function SchoolAdminLayout() {
   const [open, setOpen] = useState(false);
   const tab = useSearchParams().get("tab") ?? "dashboard";
   const {
-  loading,
-  stats,
-  attendance,
-  students,
-  teacherLeaves,
-  teacherPendingLeaves,
-  classes,
-  error,
-  events,
-  news,
-  teachers,
-  reloadDashboard,
-  reloadClasses,
-  reloadStudents,
-  reloadTeachers,
-  reloadLeaves,
-} = useDashboardData();
+    loading,
+    stats,
+    attendance,
+    students,
+    teacherLeaves,
+    teacherPendingLeaves,
+    classes,
+    error,
+    events,
+    news,
+    teachers,
+    tcRequestsAll,
+    tcRequestsPending,
+    reloadDashboard,
+    reloadClasses,
+    reloadStudents,
+    reloadTeachers,
+    reloadLeaves,
+    reloadTCRequests,
+  } = useDashboardData();
 
   const renderPage = () => {
     switch (tab) {
       case "students":
-        return <StudentsManagementPage 
-        classes={classes} 
-        reload={reloadStudents} />;
+        return (
+          <StudentsManagementPage classes={classes} reload={reloadStudents} />
+        );
       case "classes":
-        return <SchoolAdminClassesPage
-          teachers={teachers}
-          loadingTeachers={loading}
-          reload={reloadClasses}
-        />;
+        return (
+          <SchoolAdminClassesPage
+            teachers={teachers}
+            loadingTeachers={loading}
+            reload={reloadClasses}
+          />
+        );
       case "teachers":
-        return <TeachersPage teachers={teachers} reload={reloadTeachers} loading={loading} />;
+        return (
+          <TeachersPage
+            teachers={teachers}
+            reload={reloadTeachers}
+            loading={loading}
+          />
+        );
       case "teacher-leaves":
-        return <TeacherLeavesPage allLeaves={teacherLeaves} pending={teacherPendingLeaves} loading={loading} reload={reloadLeaves} />;
+        return (
+          <TeacherLeavesPage
+            allLeaves={teacherLeaves}
+            pending={teacherPendingLeaves}
+            loading={loading}
+            reload={reloadLeaves}
+          />
+        );
+      case "tc-approvals":
+        return (
+          <TeacherLeavesPage
+            allLeaves={tcRequestsAll}
+            pending={tcRequestsPending}
+            loading={loading}
+            reload={reloadTCRequests}
+            isTCApprovalsPage={true}
+          />
+        );
+
       case "workshops":
         return <WorkshopsPage workshops={events} loading={loading} reload={reloadDashboard} />;
       default:

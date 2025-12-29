@@ -6,9 +6,11 @@ import { useState } from "react";
 export default function LeaveActionButtons({
   id,
   onSuccess,
+  isTCApprovalsPage = false,
 }: {
   id: string;
   onSuccess: () => void;
+  isTCApprovalsPage?: boolean;
 }) {
   const [loading, setLoading] = useState<"approve" | "reject" | null>(null);
 
@@ -18,10 +20,16 @@ export default function LeaveActionButtons({
 
       const url =
         type === "approve"
-          ? `/api/leaves/${id}/approve`
+          ? isTCApprovalsPage
+            ? `/api/tc/${id}/approve`
+            : `/api/leaves/${id}/approve`
+          : isTCApprovalsPage
+          ? `/api/tc/${id}/reject`
           : `/api/leaves/${id}/reject`;
 
-      const res = await fetch(url, { method: "PATCH" });
+      const res = await fetch(url, {
+        method: isTCApprovalsPage ? "POST" : "PATCH",
+      });
 
       if (!res.ok) throw new Error("Action failed");
 
