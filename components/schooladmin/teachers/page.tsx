@@ -7,7 +7,7 @@ import CommonButton from "@/components/ui/common/CommonButton";
 import { Teacher } from "@/interfaces/dashboard";
 import { FiPlus, FiTrash, FiUser } from "react-icons/fi";
 import TeacherMobileCard from "@/components/responsivescreens/schooladmin/TeachersMobileCard";
-
+import { toast } from "@/services/toast/toast.service";
 import DynamicForm from "@/components/ui/models/DynamicForm";
 import { addTeacherFields } from "@/constants/schooladmin/addTeacherForm";
 
@@ -33,6 +33,7 @@ export default function TeachersPage({teachers,reload,loading}:{
         throw new Error("Failed to add teacher");
       }
 
+      toast.success("Teacher created successfully");
       setOpen(false);
       reload();
     } catch (error) {
