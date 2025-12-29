@@ -1,17 +1,36 @@
 import { FormField } from "@/interfaces/dashboard";
 
 export const addWorkshopFields: FormField[] = [
-  { name: "title", label: "Workshop Title", type: "text", placeholder: "Enter workshop title", required: true },
-  { name: "description", label: "Description", placeholder: "Describe the workshop", type: "textarea" },
-  { name: "endDate", label: "End Date", placeholder: "Select end date", type: "date" },
   {
-    name: "targetClass",
+    name: "title",
+    label: "Workshop Title",
+    type: "text",
+    placeholder: "Enter workshop title",
+    required: true,
+  },
+  {
+    name: "description",
+    label: "Description",
+    type: "textarea",
+    placeholder: "Describe the workshop",
+  },
+  {
+    name: "eventDate", 
+    label: "End Date",
+    type: "date",
+    placeholder: "Select end date",
+  },
+  {
+    name: "classId", 
     label: "Target Class",
     type: "select",
-    options: [
-      { label: "Class 1", value: "1" },
-      { label: "Class 2", value: "2" },
-    ],
+    placeholder: "Select class",
+    options: [],
   },
-  { name: "image", label: "Workshop Image", type: "file" },
+  {
+    name: "photo", 
+    label: "Workshop Image",
+    type: "file",
+    placeholder: "Upload workshop image",
+  },
 ];
