@@ -4,7 +4,6 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   ClipboardList,
-  Eye,
   CalendarCheck,
   Calendar,
   FileText,
@@ -12,11 +11,12 @@ import {
   BookOpen,
   Newspaper,
   MessageSquare,
+  Menu,
+  X,
 } from "lucide-react"
 
 import RequireRole from "./RequireRole"
 import MarksEntryPage from "./MarksEntry"
-import ViewMarksPage from "./MarksView"
 import MarkAttendancePage from "./AtendMark"
 import ViewAttendancePages from "@/app/attendance/view/page"
 import CertificatesPage from "./Certificates"
@@ -27,14 +27,18 @@ import CommunicationPage from "@/app/communication/page"
 import TeacherLeavesPage from "./teacherLeave"
 import TeacherDashboard from "./teacherDashboard"
 
+/* ---------------- USER (DISPLAY ONLY) ---------------- */
+const user = {
+  name: "Soma Sankar",
+  role: "TEACHER",
+}
+
 /* ---------------- SIDEBAR ACTIONS ---------------- */
 
 const actions = [
   { id: "dashboard", label: "Dashboard", icon: Megaphone },
-  { id: "marks-entry", label: "Marks Entry", icon: ClipboardList },
-  { id: "marks-view", label: "Marks View", icon: Eye },
+  { id: "marks-entry", label: "Marks", icon: ClipboardList },
   { id: "attendance-mark", label: "Attendance Mark", icon: CalendarCheck },
-  { id: "attendance-view", label: "Attendance View", icon: Calendar },
   { id: "certificates", label: "Certificates", icon: FileText },
   { id: "events", label: "Events", icon: Megaphone },
   { id: "homework", label: "Homeworks", icon: BookOpen },
@@ -47,15 +51,25 @@ const actions = [
 
 export default function TeachersPage() {
   const [active, setActive] = useState(actions[0])
+  const [mobileOpen, setMobileOpen] = useState(false)
 
-  return (
-    <div className="flex min-h-screen bg-green-50 m-0 p-0">
-      {/* SIDEBAR */}
-      <aside className="w-72 bg-white border-r border-green-200 shadow-lg">
-        <div className="p-6 border-b border-green-200">
-          <h1 className="text-2xl font-bold text-green-700">
+  const Sidebar = ({ mobile = false }) => (
+    <aside
+      className={`${
+        mobile ? "w-72" : "hidden md:flex w-80"
+      } flex-col justify-between bg-white border-r border-[#33b663]/20 shadow-lg h-full`}
+    >
+      {/* TOP */}
+      <div>
+        <div className="p-6 border-b border-[#33b663]/20 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-[#33b663]">
             🎓 Teacher Panel
           </h1>
+          {mobile && (
+            <button onClick={() => setMobileOpen(false)}>
+              <X />
+            </button>
+          )}
         </div>
 
         <nav className="p-4 space-y-2">
@@ -68,12 +82,15 @@ export default function TeachersPage() {
                 key={item.id}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                onClick={() => setActive(item)}
-                className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-left transition
+                onClick={() => {
+                  setActive(item)
+                  setMobileOpen(false)
+                }}
+                className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition
                   ${
                     isActive
-                      ? "bg-green-600 text-white shadow-md"
-                      : "text-green-700 hover:bg-green-100"
+                      ? "bg-[#33b663] text-white shadow-md"
+                      : "text-gray-700 hover:bg-[#e9f7f0]"
                   }
                 `}
               >
@@ -83,24 +100,80 @@ export default function TeachersPage() {
             )
           })}
         </nav>
-      </aside>
+      </div>
+
+      {/* BOTTOM PROFILE */}
+      <div className="p-4 border-t border-[#33b663]/20">
+        <div className="flex items-center gap-4 bg-[#f2fbf6] rounded-2xl p-4">
+          {/* Avatar */}
+          <div className="h-12 w-12 rounded-full bg-[#33b663] text-white flex items-center justify-center text-xl font-bold shadow">
+            {user.name.charAt(0)}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1">
+            <p className="font-semibold text-gray-800 leading-tight">
+              {user.name}
+            </p>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-[#33b663]/10 text-[#33b663]">
+              {user.role}
+            </span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  )
+
+  return (
+    <div className="flex min-h-screen bg-[#f7faf9]">
+      {/* DESKTOP SIDEBAR */}
+      <Sidebar />
+
+      {/* MOBILE NAVBAR */}
+      <header className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-[#33b663]/20 shadow-sm flex items-center justify-between px-4 py-3">
+        <button onClick={() => setMobileOpen(true)}>
+          <Menu />
+        </button>
+        <h2 className="font-semibold text-[#33b663]">
+          {active.label}
+        </h2>
+      </header>
+
+      {/* MOBILE DRAWER */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.35 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black z-40"
+              onClick={() => setMobileOpen(false)}
+            />
+            <motion.div
+              initial={{ x: -320 }}
+              animate={{ x: 0 }}
+              exit={{ x: -320 }}
+              className="fixed inset-y-0 left-0 z-50"
+            >
+              <Sidebar mobile />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 overflow-hidden m-0 p-0">
+      <main className="flex-1 pt-14 md:pt-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={active.id}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.35 }}
-            className="bg-white h-full w-full overflow-hidden m-0 p-0 rounded-none shadow-none"
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3 }}
+            className="h-full w-full bg-white"
           >
-
-            {/* CONTENT AREA */}
-            <div className="h-full w-full m-0 p-0">
-              {renderContent(active.id)}
-            </div>
+            {renderContent(active.id)}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -116,59 +189,41 @@ function renderContent(section: string) {
       return <Dashboard />
     case "marks-entry":
       return <MarksEntry />
-
-    case "marks-view":
-      return <MarksView />
-
     case "attendance-mark":
       return <AttendanceMark />
-
     case "attendance-view":
       return <AttendanceView />
-
     case "certificates":
       return <Certificate />
-
     case "homework":
       return <Homework />
-
     case "newsfeed":
       return <Newsfeed />
-
     case "events":
       return <Events />
-
     case "communication":
       return <Communication />
-
     case "leaves":
       return <Leaves />
-
     default:
       return <ComingSoon />
   }
 }
 
 /* ---------------- PAGE WRAPPERS ---------------- */
+
 function Dashboard() {
   return (
     <RequireRole allowedRoles={["TEACHER"]}>
-    <TeacherDashboard />
-    </RequireRole>
-  )
-}
-function MarksEntry() {
-  return (
-    <RequireRole allowedRoles={["TEACHER"]}>
-      <MarksEntryPage />
+      <TeacherDashboard />
     </RequireRole>
   )
 }
 
-function MarksView() {
+function MarksEntry() {
   return (
     <RequireRole allowedRoles={["TEACHER"]}>
-      <ViewMarksPage />
+      <MarksEntryPage />
     </RequireRole>
   )
 }
@@ -237,14 +292,10 @@ function Leaves() {
   )
 }
 
-/* ---------------- FALLBACK ---------------- */
-
 function ComingSoon() {
   return (
     <div className="h-full w-full flex items-center justify-center">
-      <p className="text-gray-500">
-        🚧 Feature under development
-      </p>
+      <p className="text-gray-500">🚧 Feature under development</p>
     </div>
   )
 }
