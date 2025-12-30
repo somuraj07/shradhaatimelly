@@ -81,7 +81,12 @@ export default function FeePaymentsPage({
 
       <motion.div initial="hidden" animate="visible" variants={slideFromLeft}>
         <AnimatedCard>
-          <div className="p-4 flex flex-col sm:flex-row gap-4 items-center ">
+          <div
+            className="
+                    p-4
+                    flex flex-col gap-4
+                    sm:flex-row sm:items-end sm:justify-between
+                  ">
             <SelectField
               label="Select Class"
               value={selectedClass}
@@ -94,17 +99,24 @@ export default function FeePaymentsPage({
 
             <button
               style={{ backgroundColor: `${MAIN_COLOR}` }}
-              className="text-white h-10 px-4 py-2 rounded-md hover:transition"
+              className="
+                  text-white
+                  h-[44px]
+                  px-6
+                  rounded-lg
+                  text-sm font-medium
+                  whitespace-nowrap
+                  hover:opacity-90
+                  transition
+                  w-full sm:w-auto"
             >
-              Download
+              Download PDF
             </button>
           </div>
         </AnimatedCard>
       </motion.div>
 
-      {selectedClass && classStats && (
-          <FeeStats stats={classStats} />
-      )}
+      {selectedClass && classStats && <FeeStats stats={classStats} />}
 
       {selectedClass ? (
         <motion.div initial="hidden" animate="visible" variants={slideFromLeft}>
