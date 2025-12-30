@@ -74,7 +74,7 @@ export default function TeachersPage({teachers,reload,loading}:{
       header: "Subject",
       render: (row) => (
         <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700 whitespace-nowrap">
-          {row.subject}
+          {row.subject??'-'}
         </span>
       ),
     },
