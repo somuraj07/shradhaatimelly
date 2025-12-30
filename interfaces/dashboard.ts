@@ -31,7 +31,7 @@ export interface Teacher {
   name: string;
   email: string;
   mobile: string;
-  subject: string;
+  subjectsTaught: string;
 }
 
 export type FieldType =

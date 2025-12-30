@@ -5,7 +5,7 @@ export const addTeacherFields: FormField[] = [
   { name: "email", label: "Email", type: "email", placeholder: "Enter email address", required: true },
   { name: "password", label: "Password", type: "password", placeholder: "Create a strong password", required: true },
   {
-    name: "subject", label: "Subject", type: "select", placeholder: "Enter subject", options: [
+    name: "subjectsTaught", label: "subjectsTaught", type: "select", placeholder: "Enter subject", options: [
       { label: "math", value: "Mathematics" },
       { label: "science", value: "Science" },
       { label: "social", value: "Social" },

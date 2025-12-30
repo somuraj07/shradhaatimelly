@@ -41,7 +41,7 @@ export async function POST(req: Request) {
         role: Role.TEACHER,
         schoolId,
         mobile: mobile || null,
-        subjectsTaught: subjectsTaught || null,
+        subjectsTaught,
       },
       select: {
         id: true,
