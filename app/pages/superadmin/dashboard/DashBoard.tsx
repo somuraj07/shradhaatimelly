@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 
 import Sidebar from "@/components/layout/Sidebar";
 import TopNavbar from "@/components/layout/TopNavbar";
-import DashboardPage from "@/components/superadmin/dashboard/page";
-import AddSchoolPage from "@/components/superadmin/addschool/page";
+import DashboardPage from "@/components/superadmin/dashboard/Dashboard";
+import AddSchoolPage from "@/components/superadmin/addschool/AddSchool";
 import { SUPERADMIN_SIDEBAR_ITEMS } from "@/constants/superadmin/sidebar";
 import { useSearchParams } from "next/navigation";
-import SchoolsListPage from "@/components/superadmin/schoolsList/page";
-import TransactionsListPage from "@/components/superadmin/transactionsList/page";
+import SchoolsListPage from "@/components/superadmin/schoolsList/SchoolList";
+import TransactionsListPage from "@/components/superadmin/transactionsList/TransactionList";
 
 export default function SuperAdminLayout() {
   const searchParams = useSearchParams();

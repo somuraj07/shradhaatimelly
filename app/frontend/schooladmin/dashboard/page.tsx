@@ -1,6 +1,6 @@
 "use client";
 
-import SchoolAdminLayout from "@/app/pages/schooladmin/dashboard/page";
+import SchoolAdminLayout from "@/app/pages/schooladmin/dashboard/Dashboard";
 import RequireRole from "@/components/RequireRole";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";

@@ -1,4 +1,4 @@
-import { Student } from "@/components/schooladmin/studentsManagement/page";
+import { Student } from "@/components/schooladmin/studentsManagement/StudentManagement";
 import { useEffect, useState } from "react";
 
 export function useStudents(classId: string) {

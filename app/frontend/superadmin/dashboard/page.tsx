@@ -1,6 +1,6 @@
 "use client";
 
-import SuperAdminLayout from "@/app/pages/superadmin/dashboard/page";
+import SuperAdminLayout from "@/app/pages/superadmin/dashboard/DashBoard";
 import RequireRole from "@/components/RequireRole";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";

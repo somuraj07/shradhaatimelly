@@ -22,6 +22,8 @@ export function useDashboardData() {
   const [allTCRequests, setAllTCRequests] = useState<ITransferCertificate[]>([]);
   const [pendingTCRequests, setPendingTCRequests] = useState<ITransferCertificate[]>([]);
   const [feesCollected, setFeesCollected] = useState<number>(0);
+  const [feeDetails,setFeeDetails]= useState<any[]>([]);
+  const [feeStats,setFeeStats]= useState<any>(null);
 
   /* ---------------- DERIVED STATE ---------------- */
   const [stats, setStats] = useState<any>({
@@ -101,6 +103,8 @@ export function useDashboardData() {
       setTeacherLeaves(leavesAll ?? []);
       setTeacherPendingLeaves(leavesPending ?? []);
       setFeesCollected(feesRes?.stats?.totalCollected ?? 0);
+      setFeeStats(feesRes?.stats ?? null);
+      setFeeDetails(feesRes?.fees ?? []);
       setAllTCRequests(tcRequestsAll.tcs ?? []);
       setPendingTCRequests(tcRequestsPending.tcs ?? []);
     } catch {
@@ -205,6 +209,8 @@ export function useDashboardData() {
 
     // data
     stats,
+    feeDetails,
+    feeStats,
     attendance,
     classes,
     students,
