@@ -13,9 +13,9 @@ export async function POST(req: Request) {
 
     const user = session.user
 
-    const { leaveType, reason, fromDate, toDate } = await req.json()
+    const { leaveType, reason, fromDate, toDate,days } = await req.json()
 
-    if (!leaveType || !fromDate || !toDate) {
+    if (!leaveType || !fromDate || !toDate || !days) {
       return Response.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -46,6 +46,7 @@ export async function POST(req: Request) {
         schoolId: user.schoolId as string,
         leaveType,
         reason,
+        days,
         fromDate: new Date(fromDate),
         toDate: new Date(toDate)
       }

@@ -6,7 +6,7 @@ import prisma from "@/lib/db";
 export async function PUT(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    const { name, address, location } = await req.json();
+    const { name, address, location ,icon,pincode,district,state,city } = await req.json();
 
     if (!session)
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -27,7 +27,7 @@ export async function PUT(req: Request) {
     // ✅ UPDATE school on primary
     const updated = await prisma.school.update({
       where: { id: user.schoolId },
-      data: { name, address, location },
+      data: { name, address, location ,icon,pincode,district,state,city },
     });
 
     return NextResponse.json(

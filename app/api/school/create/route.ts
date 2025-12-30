@@ -12,9 +12,9 @@ export async function POST(req: Request) {
     }
 
 
-    const { name, address, location } = await req.json();
+    const { name, address, location ,icon,pincode,district,state,city } = await req.json();
 
-    if (!name || !address || !location) {
+    if (!name || !address || !location || !pincode || !district || !state || !city) {
       return NextResponse.json(
         { message: "Name, Address, and Location are required" },
         { status: 400 }
@@ -47,6 +47,11 @@ export async function POST(req: Request) {
         name,
         address,
         location,
+        icon,
+        pincode,
+        district,
+        state,
+        city,
         admins: {
           connect: { id: session.user.id },
         },

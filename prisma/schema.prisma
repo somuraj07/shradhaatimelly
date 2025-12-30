@@ -103,7 +103,7 @@ model LeaveRequest {
 
   leaveType LeaveType
   reason    String   @db.Text
-
+  days     String
   fromDate DateTime
   toDate   DateTime
 
@@ -125,7 +125,11 @@ model School {
   name     String
   address  String
   location String
-
+  icon     String? // URL or file path
+  pincode String
+  district String
+  state    String
+  city    String
   admins   User[]    @relation("SchoolAdmin")
   teachers User[]    @relation("SchoolTeacher")
   students Student[]
