@@ -14,6 +14,7 @@ import StudentsManagementPage from "@/components/schooladmin/studentsManagement/
 import TeacherLeavesPage from "@/components/schooladmin/teachersleaves/TeacherLeaves";
 import FeePaymentsPage from "@/components/schooladmin/schoolpayments/SchoolPayements";
 import SchoolAdminClassesPage from "@/components/schooladmin/classes/Classes";
+import WorkshopsPage from "@/components/schooladmin/workshops/WorkShops";
 
 export default function SchoolAdminLayout() {
   const [open, setOpen] = useState(false);
@@ -84,7 +85,21 @@ export default function SchoolAdminLayout() {
           />
         );
       case "payments":
-        return <FeePaymentsPage classes={classes} fees={feeDetails} stats={feeStats}/>;
+        return (
+          <FeePaymentsPage
+            classes={classes}
+            fees={feeDetails}
+            stats={feeStats}
+          />
+        );
+      case "workshops":
+        return (
+          <WorkshopsPage
+            workshops={events}
+            loading={loading}
+            reload={reloadDashboard}
+          />
+        );
       default:
         return (
           <DashboardTab

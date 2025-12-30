@@ -3,6 +3,12 @@ import { api } from "@/services/schooladmin/dashboard/dashboard.api";
 import { calculateTodayAttendance } from "@/services/schooladmin/dashboard/dashboard.utils";
 import { useEffect, useState, useCallback } from "react";
 
+
+export const safeArray = <T>(value: any): T[] => {
+  return Array.isArray(value) ? value : [];
+};
+
+
 export function useDashboardData() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{
@@ -22,8 +28,8 @@ export function useDashboardData() {
   const [allTCRequests, setAllTCRequests] = useState<ITransferCertificate[]>([]);
   const [pendingTCRequests, setPendingTCRequests] = useState<ITransferCertificate[]>([]);
   const [feesCollected, setFeesCollected] = useState<number>(0);
-  const [feeDetails,setFeeDetails]= useState<any[]>([]);
-  const [feeStats,setFeeStats]= useState<any>(null);
+  const [feeDetails, setFeeDetails] = useState<any[]>([]);
+  const [feeStats, setFeeStats] = useState<any>(null);
 
   /* ---------------- DERIVED STATE ---------------- */
   const [stats, setStats] = useState<any>({
@@ -94,19 +100,20 @@ export function useDashboardData() {
         api.tcRequestsPending()
       ]);
 
-      setClasses(classesRes?.classes ?? []);
-      setStudents(studentsRes?.students ?? []);
-      setTeachers(teachersRes?.teachers ?? []);
-      setAttendanceRaw(attendanceRes?.attendances ?? []);
-      setEvents(eventsRes?.events ?? []);
-      setNews(newsRes?.newsFeeds ?? []);
-      setTeacherLeaves(leavesAll ?? []);
-      setTeacherPendingLeaves(leavesPending ?? []);
+      setClasses(safeArray(classesRes?.classes));
+      setStudents(safeArray(studentsRes?.students));
+      setTeachers(safeArray(teachersRes?.teachers));
+      setAttendanceRaw(safeArray(attendanceRes?.attendances));
+      setEvents(safeArray(eventsRes?.events));
+      setNews(safeArray(newsRes?.newsFeeds));
+      setTeacherLeaves(safeArray(leavesAll));
+      setTeacherPendingLeaves(safeArray(leavesPending));
       setFeesCollected(feesRes?.stats?.totalCollected ?? 0);
       setFeeStats(feesRes?.stats ?? null);
-      setFeeDetails(feesRes?.fees ?? []);
-      setAllTCRequests(tcRequestsAll.tcs ?? []);
-      setPendingTCRequests(tcRequestsPending.tcs ?? []);
+      setFeeDetails(safeArray(feesRes?.fees));
+      setAllTCRequests(safeArray(tcRequestsAll?.tcs));
+      setPendingTCRequests(safeArray(tcRequestsPending?.tcs));
+
     } catch {
       setError({
         message: "Failed to load dashboard data",
@@ -124,12 +131,18 @@ export function useDashboardData() {
   /* ---------------- AUTO RECOMPUTE DERIVED STATE ---------------- */
 
   useEffect(() => {
-    recalculateStats();
-  }, [recalculateStats]);
+    if (!loading) {
+      recalculateStats();
+    }
+  }, [loading, recalculateStats]);
+
 
   useEffect(() => {
-    recalculateAttendance();
-  }, [recalculateAttendance]);
+    if (!loading) {
+      recalculateAttendance();
+    }
+  }, [loading, recalculateAttendance]);
+
 
   /* ---------------- TAB-SCOPED RELOADS ---------------- */
 
@@ -193,7 +206,7 @@ export function useDashboardData() {
   };
 
   const reloadTCRequests = async () => {
-    const [pending,all]=await Promise.all([
+    const [pending, all] = await Promise.all([
       api.tcRequestsPending(),
       api.tcRequestsAll()
     ]);
