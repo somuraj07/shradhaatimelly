@@ -50,7 +50,7 @@ export default function LoginPage() {
     const roleRoutes: Record<string, string> = {
       SUPERADMIN: "/frontend/superadmin/dashboard",
       SCHOOLADMIN: "/frontend/schooladmin/dashboard",
-      TEACHER: "/frontend/teachersPortal",
+      TEACHER: "/teachersPortal",
       STUDENT: "/frontend/student",
     };
 

@@ -11,9 +11,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { title, description, mediaUrl, mediaType } = await req.json();
+    const { title, description, mediaUrl, mediaType ,tagline} = await req.json();
 
-    if (!title || !description) {
+    if (!title || !description || !tagline) {
       return NextResponse.json(
         { message: "Title and description are required" },
         { status: 400 }
@@ -33,6 +33,7 @@ export async function POST(req: Request) {
       data: {
         title,
         description,
+        tagline,
         mediaUrl: mediaUrl || null,
         mediaType: mediaType || null,
         schoolId,

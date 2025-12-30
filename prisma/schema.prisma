@@ -364,6 +364,7 @@ model NewsFeed {
   id          String   @id @default(cuid())
   title       String
   description String   @db.Text
+  tagline   String?
   mediaUrl    String?  // Photo or video URL
   mediaType   String?  // "PHOTO", "VIDEO", null
   

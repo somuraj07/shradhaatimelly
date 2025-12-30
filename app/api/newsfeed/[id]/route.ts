@@ -15,7 +15,7 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const { title, description, mediaUrl, mediaType } = await req.json();
+    const { title, description, mediaUrl, mediaType ,tagline } = await req.json();
 
     const schoolId = session.user.schoolId;
 
@@ -46,6 +46,7 @@ export async function PUT(
       data: {
         ...(title && { title }),
         ...(description && { description }),
+        ...(tagline && { tagline }),
         ...(mediaUrl !== undefined && { mediaUrl }),
         ...(mediaType !== undefined && { mediaType }),
       },
