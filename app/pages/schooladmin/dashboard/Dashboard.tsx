@@ -15,6 +15,7 @@ import TeacherLeavesPage from "@/components/schooladmin/teachersleaves/TeacherLe
 import FeePaymentsPage from "@/components/schooladmin/schoolpayments/SchoolPayements";
 import SchoolAdminClassesPage from "@/components/schooladmin/classes/Classes";
 import WorkshopsPage from "@/components/schooladmin/workshops/WorkShops";
+import AnalysisClient from "@/components/schooladmin/analysis/Analysis";
 
 export default function SchoolAdminLayout() {
   const [open, setOpen] = useState(false);
@@ -100,6 +101,8 @@ export default function SchoolAdminLayout() {
             reload={reloadDashboard}
           />
         );
+      case "analysis":
+        return <AnalysisClient />;
       default:
         return (
           <DashboardTab
@@ -116,7 +119,7 @@ export default function SchoolAdminLayout() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 animate-dashboard-container bg-[#f8fafc] min-h-screen">
+    <div className="flex h-screen overflow-hidden bg-gray-50 animate-dashboard-container bg-[#f8fafc]">
       {/* ========== DESKTOP SIDEBAR ========== */}
       <aside className="hidden md:block">
         <SchoolAdminSideBar menuItems={SCHOOLADMIN_MENU_ITEMS} />

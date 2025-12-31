@@ -14,3 +14,11 @@ export async function api(url: string, options?: RequestInit): Promise<Response>
 
   return res;
 }
+
+export async function apiJson<T = any>(
+  url: string,
+  options?: RequestInit
+): Promise<T> {
+  const res = await api(url, options);
+  return res.json();
+}

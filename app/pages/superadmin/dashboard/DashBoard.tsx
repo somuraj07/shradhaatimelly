@@ -36,7 +36,7 @@ export default function SuperAdminLayout() {
 
     fetch("/api/superadmin/transactions")
       .then((r) => r.json())
-      .then((r) => setTransactions(r.data.slice(0, 8)));
+      .then((r) => setTransactions(r.data ? r.data.slice(0, 8) : []));
   }, [tab]);
 
   const renderPage = () => {

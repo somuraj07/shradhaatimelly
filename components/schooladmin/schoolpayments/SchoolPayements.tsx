@@ -9,6 +9,9 @@ import FeeStats from "@/components/ui/fee/FeeStats";
 import { useMemo, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { MAIN_COLOR } from "@/constants/colors";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { toast } from "@/services/toast/toast.service";
 
 export default function FeePaymentsPage({
   classes,
@@ -70,6 +73,102 @@ export default function FeePaymentsPage({
     },
   };
 
+  const handleDownloadPDF = () => {
+    if (!selectedClass || !classStats) {
+      toast.error("Please select a class to generate the report.");
+      return
+    };
+
+    const doc = new jsPDF("p", "mm", "a4");
+
+    const selectedClassObj = classes.find((c) => c.id === selectedClass);
+
+    /* ---------------- HEADER ---------------- */
+    doc.setFontSize(16);
+    doc.text("Fee Payment Report", 14, 18);
+
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(
+      `Class: ${selectedClassObj?.name} - ${selectedClassObj?.section}`,
+      14,
+      26
+    );
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 32);
+
+    /* ---------------- SUMMARY ---------------- */
+    doc.setTextColor(0);
+    doc.setFontSize(13);
+    doc.text("Summary", 14, 44);
+
+    autoTable(doc, {
+      startY: 48,
+      head: [["Total Students", "Paid", "Pending", "Collected (₹)", "Due (₹)"]],
+      body: [
+        [
+          classStats.totalStudents,
+          classStats.paid,
+          classStats.pending,
+          classStats.totalCollected.toLocaleString(),
+          classStats.totalDue.toLocaleString(),
+        ],
+      ],
+      theme: "grid",
+      headStyles: {
+        fillColor: [67, 183, 113], // matches MAIN_COLOR
+        textColor: 255,
+      },
+    });
+
+    /* ---------------- DETAILS TABLE ---------------- */
+    doc.setFontSize(13);
+    doc.text("Student Fee Details", 14, (doc as any).lastAutoTable.finalY + 12);
+
+    autoTable(doc, {
+      startY: (doc as any).lastAutoTable.finalY + 16,
+      head: [
+        [
+          "Student Name",
+          "Total Fee",
+          "Discount %",
+          "Paid (₹)",
+          "Remaining (₹)",
+          "Status",
+        ],
+      ],
+      body: filteredFees.map((fee) => [
+        fee.student.user?.name ?? "-",
+        fee.totalFee,
+        fee.discountPercent,
+        fee.amountPaid,
+        fee.remainingFee,
+        fee.remainingFee <= 0 ? "PAID" : "PENDING",
+      ]),
+      styles: {
+        fontSize: 9,
+      },
+      headStyles: {
+        fillColor: [240, 240, 240],
+        textColor: 0,
+      },
+      didParseCell: function (data) {
+        // Status column = index 5
+        if (data.section === "body" && data.column.index === 5) {
+          if (data.cell.raw === "PAID") {
+            data.cell.styles.textColor = [0, 150, 0];
+          } else {
+            data.cell.styles.textColor = [200, 0, 0];
+          }
+        }
+      },
+    });
+
+    /* ---------------- SAVE ---------------- */
+    doc.save(
+      `Fee_Report_${selectedClassObj?.name}_${selectedClassObj?.section}.pdf`
+    );
+  };
+
   return (
     <div className="space-y-6">
       <motion.div initial="hidden" animate="visible" variants={slideFromLeft}>
@@ -86,7 +185,8 @@ export default function FeePaymentsPage({
                     p-4
                     flex flex-col gap-4
                     sm:flex-row sm:items-end sm:justify-between
-                  ">
+                  "
+          >
             <SelectField
               label="Select Class"
               value={selectedClass}
@@ -99,6 +199,7 @@ export default function FeePaymentsPage({
 
             <button
               style={{ backgroundColor: `${MAIN_COLOR}` }}
+              onClick={handleDownloadPDF}
               className="
                   text-white
                   h-[44px]

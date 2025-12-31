@@ -33,7 +33,7 @@ const getTransactionColumns = (): Column<Transaction>[] => [
   return (
       <DataTable
         columns={getTransactionColumns()}
-        data={transactions}
+        data={transactions.length ? transactions : []}
       />
    
   );

@@ -139,7 +139,7 @@ export default function SchoolsListPage() {
       {/* Table */}
       <DataTable
         columns={columns}
-        data={schools}
+        data={schools.length ? schools : []}
         loading={loading}
         emptyText="No schools found"
       />
@@ -155,7 +155,7 @@ export default function SchoolsListPage() {
         </button>
 
         <span>
-          Page {loading ? 0 : page} of {totalPages}
+          Page {schools.length ? page : 0} of {totalPages}
         </span>
 
         <button

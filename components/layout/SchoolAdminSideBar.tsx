@@ -40,7 +40,6 @@ export default function SchoolAdminSideBar({
     fetchSchool();
   }, []);
 
-
   const handleClick = async (item: SidebarItem) => {
     if (item.action === "logout") {
       await signOut({ callbackUrl: "/" });
@@ -56,7 +55,7 @@ export default function SchoolAdminSideBar({
   return (
     <aside className="relative w-64 bg-white h-full flex flex-col border-r border-gray-300">
       
-      {/* 🔝 TOP PROFILE / BRAND */}
+      {/* TOP PROFILE / BRAND */}
       <div className="px-4 py-5 flex items-center gap-3 border-b border-gray-200">
         <div className="w-10 h-10 rounded-full bg-[#43b771] flex items-center justify-center text-white font-bold">
           SA
@@ -71,7 +70,7 @@ export default function SchoolAdminSideBar({
         </div>
       </div>
 
-      {/* 🧭 SIDEBAR MENU */}
+      {/*SIDEBAR MENU */}
       <div className="flex-1 px-3 py-4 overflow-y-auto">
         {menuItems.map((item) => {
           const isActive = item.tab === activeTab;
@@ -131,7 +130,7 @@ export default function SchoolAdminSideBar({
         })}
       </div>
 
-      {/* 🔽 BOTTOM ADMIN PROFILE */}
+      {/* BOTTOM ADMIN PROFILE */}
       <div className="px-4 py-4 border-t border-gray-300 flex items-center gap-3">
         <div className="w-9 h-9 rounded-full bg-[#43b771] text-white flex items-center justify-center text-sm font-semibold">
           AD
@@ -146,7 +145,7 @@ export default function SchoolAdminSideBar({
         </div>
       </div>
 
-      {/* 🔻 BRAND LOGO */}
+      {/*  BRAND LOGO */}
       <div className="border-t border-gray-100">
         <div className="h-14 w-full overflow-hidden px-4 flex items-center">
           <div className="-ml-8 scale-[0.9]">
