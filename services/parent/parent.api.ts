@@ -2,10 +2,14 @@ import { apiJson } from "../api";
 
 // helper – future-proof
 const withStudent = (url: string, studentId?: string) => {
-  // TODAY: backend ignores studentId
-  // FUTURE: backend filters by studentId
-  return studentId ? `${url}?studentId=${studentId}` : url;
+  if (!studentId) return url;
+
+  const hasQuery = url.includes("?");
+  return hasQuery
+    ? `${url}&studentId=${studentId}`
+    : `${url}?studentId=${studentId}`;
 };
+
 
 export const parentApi = {
   homeworks: (studentId?: string) =>
@@ -35,7 +39,7 @@ export const parentApi = {
 
   fees: (studentId?: string) =>
     apiJson<{ fee: any }>(
-      studentId ? `/api/fees/${studentId}` : "/api/fees/mine"
+      withStudent("/api/fees/mine", studentId)
     ),
 
   appointments: () =>

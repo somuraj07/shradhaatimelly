@@ -33,23 +33,33 @@ export function useParentDashboardData() {
 
   /* ---------------- DERIVED CALCULATIONS ---------------- */
 
-  const recalculateAttendance = useCallback(() => {
-    const present = attendanceRaw.filter(a => a.status === "PRESENT").length;
-    const absent = attendanceRaw.filter(a => a.status === "ABSENT").length;
-    const late = attendanceRaw.filter(a => a.status === "LATE").length;
-    const total = attendanceRaw.length || 1;
+const recalculateAttendance = useCallback(() => {
+  const normalized = attendanceRaw.map(a => ({
+    ...a,
+    status: String(a.status).toUpperCase().trim(),
+  }));
 
-    setAttendanceStats({
-      present,
-      absent,
-      late,
-      percent: Math.round((present / total) * 100),
-    });
-  }, [attendanceRaw]);
+  const present = normalized.filter(a => a.status === "PRESENT").length;
+  const absent = normalized.filter(a => a.status === "ABSENT").length;
+  const late = normalized.filter(a => a.status === "LATE").length;
+
+  const total = normalized.length;
+
+  setAttendanceStats({
+    present,
+    absent,
+    late,
+    percent: total ? Math.round(((present + late) / total) * 100) : 0,
+  });
+}, [attendanceRaw]);
+
 
   /* ---------------- LOAD ALL (CORE) ---------------- */
 
   const loadAll = useCallback(async () => {
+    if (!activeStudent?.id) {
+    return; 
+  }
     setLoading(true);
     setError(null);
 
@@ -97,17 +107,19 @@ export function useParentDashboardData() {
 
   /* ---------------- AUTO LOAD ON STUDENT CHANGE ---------------- */
 
-  useEffect(() => {
+useEffect(() => {
+  if (activeStudent?.id) {
     loadAll();
-  }, [loadAll]);
+  }
+}, [activeStudent?.id, loadAll]);
+
 
   /* ---------------- AUTO DERIVED ---------------- */
 
-  useEffect(() => {
-    if (!loading) {
-      recalculateAttendance();
-    }
-  }, [loading, recalculateAttendance]);
+useEffect(() => {
+  recalculateAttendance();
+}, [attendanceRaw, recalculateAttendance]);
+
 
   /* ---------------- TAB-LEVEL RELOADS ---------------- */
 
