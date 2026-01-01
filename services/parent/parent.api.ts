@@ -10,34 +10,34 @@ const withStudent = (url: string, studentId?: string) => {
 export const parentApi = {
   homeworks: (studentId?: string) =>
     apiJson<{ homeworks: any[] }>(
-      withStudent("/api/homeworks", studentId)
+      withStudent("/api/homework/list", studentId)
     ),
 
   attendance: (studentId?: string) =>
     apiJson<{ attendances: any[] }>(
-      withStudent("/api/attendance", studentId)
+      withStudent("/api/attendance/view", studentId)
     ),
 
   marks: (studentId?: string) =>
     apiJson<{ marks: any[] }>(
-      withStudent("/api/marks", studentId)
+      withStudent("/api/marks/view", studentId)
     ),
 
   events: (studentId?: string) =>
     apiJson<{ events: any[] }>(
-      withStudent("/api/events", studentId)
+      withStudent("/api/events/list", studentId)
     ),
 
   certificates: (studentId?: string) =>
     apiJson<{ certificates: any[] }>(
-      withStudent("/api/certificates", studentId)
+      withStudent("/api/certificates/list", studentId)
     ),
 
   fees: (studentId?: string) =>
     apiJson<{ fee: any }>(
-      studentId ? `/api/fees/${studentId}` : "/api/fees"
+      studentId ? `/api/fees/${studentId}` : "/api/fees/mine"
     ),
 
   appointments: () =>
-    apiJson<{ appointments: any[] }>("/api/appointments"),
+    apiJson<{ appointments: any[] }>("/api/communication/appointments"),
 };
