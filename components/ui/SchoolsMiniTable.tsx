@@ -37,7 +37,7 @@ export default function SchoolsMiniTable({
   return (
     <DataTable
       columns={getSchoolsMiniColumns()}
-      data={schools}
+      data={Array.isArray(schools) ? schools : []}
     />
   );
 }

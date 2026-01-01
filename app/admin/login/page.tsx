@@ -51,7 +51,7 @@ export default function LoginPage() {
       SUPERADMIN: "/frontend/superadmin/dashboard",
       SCHOOLADMIN: "/frontend/schooladmin/dashboard",
       TEACHER: "/teachersPortal",
-      STUDENT: "/frontend/student",
+      STUDENT: "/frontend/parent/dashboard",
     };
 
     router.push(roleRoutes[session.user.role] || "/unauthorized");

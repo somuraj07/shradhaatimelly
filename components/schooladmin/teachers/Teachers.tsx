@@ -152,7 +152,7 @@ export default function TeachersPage({teachers,reload,loading}:{
           <div className="min-w-[750px] p-3">
             <DataTable
               columns={columns}
-              data={teachers}
+              data={teachers.length ? teachers : []}
               loading={loading}
               emptyText="No teachers found"
             />

@@ -91,7 +91,7 @@ const getTransactionsListColumns = (): Column<Transaction>[] => [
       {/* Table */}
       <DataTable
         columns={getTransactionsListColumns()}
-        data={filteredTransactions}
+        data={filteredTransactions.length ? filteredTransactions : []}
         loading={loading}
         emptyText="No transactions found"
       />

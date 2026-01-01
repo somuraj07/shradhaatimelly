@@ -50,7 +50,7 @@ export default function FeeDetails({
       <div className="hidden md:block">
         <DataTable
           columns={feeColumns}
-          data={fees}
+          data={fees.length ? fees : []}
           loading={loading}
           emptyText="No fee records found"
         />
