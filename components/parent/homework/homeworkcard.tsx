@@ -24,7 +24,7 @@ const cardVariants = {
   },
 };
 
-export default function HomeworkCard({ homework }: { homework: any }) {
+export default function HomeworkCard({ homework,reloadHomework }: { homework: any; reloadHomework: ()=>void }) {
   const {
     id,
     title,
@@ -48,6 +48,7 @@ export default function HomeworkCard({ homework }: { homework: any }) {
         content: "Submitted from student portal",
       });
       toast.success("Homework submitted successfully");
+      reloadHomework();
       setSubmitted(true);
     } catch (error) {
       console.error("Submit homework failed", error);

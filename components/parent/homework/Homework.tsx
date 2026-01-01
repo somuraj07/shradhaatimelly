@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { parentApi } from "@/services/parent/parent.api";
 import HomeworkSkeleton from "@/components/parent/homework/HomeworkSkeleton";
 import HomeworkCard from "@/components/parent/homework/homeworkcard";
 import { HiSparkles } from "react-icons/hi2";
 
-export default function HomeworkPage() {
-  const [homeworks, setHomeworks] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function HomeworkPage({homeworks,loading,reloadHomework}: {homeworks: any[]; loading: boolean; reloadHomework: ()=>void}) {
+
 [{
 	"resource": "/d:/Timellyschool/shradhaatimelly/app/pages/parent/dashboard/Dashboard.tsx",
 	"owner": "typescript",
@@ -32,21 +29,7 @@ export default function HomeworkPage() {
 	],
 	"origin": "extHost1"
 }]
-  useEffect(() => {
-    loadHomeworks();
-  }, []);
 
-  const loadHomeworks = async () => {
-    try {
-      setLoading(true);
-      const res = await parentApi.homeworks();
-      setHomeworks(res.homeworks || []);
-    } catch (err) {
-      console.error("Failed to load homework", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="px-4 md:px-8 py-6">
@@ -75,7 +58,7 @@ export default function HomeworkPage() {
           </p>
         ) : (
           homeworks.map((hw) => (
-            <HomeworkCard key={hw.id} homework={hw} />
+            <HomeworkCard key={hw.id} homework={hw} reloadHomework={reloadHomework} />
           ))
         )}
       </div>
