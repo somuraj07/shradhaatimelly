@@ -20,11 +20,17 @@ export default function MarkAttendancePage() {
   const [classes, setClasses] = useState<Class[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("");
-  const [date, setDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
   const [period, setPeriod] = useState<number>(1);
   const [attendances, setAttendances] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [lastSubmittedPeriod, setLastSubmittedPeriod] = useState<number | null>(
+    null
+  );
+  const [markedPeriods, setMarkedPeriods] = useState<number[]>([]);
 
   useEffect(() => {
     if (session && session.user.role === "TEACHER") {
@@ -100,10 +106,12 @@ export default function MarkAttendancePage() {
     setMessage("");
 
     try {
-      const attendanceArray = Object.entries(attendances).map(([studentId, status]) => ({
-        studentId,
-        status,
-      }));
+      const attendanceArray = Object.entries(attendances).map(
+        ([studentId, status]) => ({
+          studentId,
+          status,
+        })
+      );
 
       const res = await fetch("/api/attendance/mark", {
         method: "POST",
@@ -124,8 +132,10 @@ export default function MarkAttendancePage() {
       }
 
       setMessage("Attendance marked successfully!");
-      // Reset form
       setAttendances({});
+      setPeriod((p) => Math.min(p + 1, 8)); // 👈 auto move to next period
+      setLastSubmittedPeriod(period);
+      setMarkedPeriods((prev) => [...prev, period]);
     } catch (err) {
       console.error(err);
       setMessage("Something went wrong");
@@ -142,7 +152,9 @@ export default function MarkAttendancePage() {
   return (
     <div className="min-h-screen bg-green-50 p-6">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-green-700 mb-6">Mark Attendance</h1>
+        <h1 className="text-2xl font-bold text-green-700 mb-6">
+          Mark Attendance
+        </h1>
 
         {message && (
           <div
@@ -156,7 +168,10 @@ export default function MarkAttendancePage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md mb-6">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white p-6 rounded-lg shadow-md mb-6"
+        >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -201,8 +216,12 @@ export default function MarkAttendancePage() {
                 className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-400"
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((p) => (
-                  <option key={p} value={p}>
-                    Period {p}
+                  <option
+                    key={p}
+                    value={p}
+                    disabled={markedPeriods.includes(p)}
+                  >
+                    Period {p} {markedPeriods.includes(p) ? "(Marked)" : ""}
                   </option>
                 ))}
               </select>
@@ -211,7 +230,9 @@ export default function MarkAttendancePage() {
 
           {students.length > 0 && (
             <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-4">Students Attendance</h2>
+              <h2 className="text-lg font-semibold mb-4">
+                Students Attendance
+              </h2>
               <div className="space-y-2">
                 {students.map((student) => (
                   <div
@@ -222,7 +243,10 @@ export default function MarkAttendancePage() {
                     <select
                       value={attendances[student.id] || "PRESENT"}
                       onChange={(e) =>
-                        setAttendances({ ...attendances, [student.id]: e.target.value })
+                        setAttendances({
+                          ...attendances,
+                          [student.id]: e.target.value,
+                        })
                       }
                       className="border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-400"
                     >
@@ -238,7 +262,9 @@ export default function MarkAttendancePage() {
 
           <button
             type="submit"
-            disabled={loading || students.length === 0}
+            disabled={
+              loading || students.length === 0 || lastSubmittedPeriod === period
+            }
             className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition disabled:opacity-50"
           >
             {loading ? "Saving..." : "Mark Attendance"}
