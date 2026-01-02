@@ -9,6 +9,8 @@ import { PARENT_MENU_ITEMS } from "@/constants/parent/sidebar";
 import ParentHomework from "@/components/parent/homework/Homework";
 import ParentAttendance from "@/components/parent/attendance/Attendance";
 import ParentDashboard from "@/components/parent/dashboard/Dashboard";
+import ParentMarks from "@/components/parent/marks/ParentMarks";
+import ParentCertificates from "@/components/parent/certificates/ParentCertificates";
 import { useParentDashboardData } from "@/hooks/parent/useParentDashboard";
 
 /* Parent pages */
@@ -24,16 +26,16 @@ export default function ParentDashboardLayout() {
         return <ParentHomework homeworks={homeworks} loading={loading} reloadHomework={reloadHomework} />;
       case "attendance":
         return <ParentAttendance attendanceStats={attendanceStats} />;
-    //   case "marks":
-    //     return <ParentMarks />;
-    //   case "chat":
-    //     return <ParentChat />;
-    //   case "workshops":
-    //     return <ParentWorkshops />;
+      case "marks":
+        return <ParentMarks />;
+      // case "chat":
+      //   return <ParentChat />;
+      // case "workshops":
+      //   return <ParentWorkshops />;
     //   case "fees":
     //     return <ParentFees />;
-    //   case "certificates":
-    //     return <ParentCertificates />;
+      case "certificates":
+        return <ParentCertificates />;
       default:
         return <ParentDashboard />;
     }

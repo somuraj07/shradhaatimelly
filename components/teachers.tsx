@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { toast } from "@/services/toast/toast.service";
 
 export default function TeacherSignupPage() {
   const { data: session, status } = useSession();
@@ -55,6 +56,7 @@ export default function TeacherSignupPage() {
         setMessage(data.message || "Failed to create teacher");
         return;
       }
+      toast.success("Teacher created successfully");
       setMessage("Teacher created successfully");
       setForm({ name: "", email: "", password: "", mobile: "" , subjects: [] });
     } catch (err) {
