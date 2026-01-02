@@ -2,124 +2,212 @@
 
 import { useEffect, useState } from "react"
 
-interface Leave {
+type Leave = {
   id: string
   leaveType: string
+  reason?: string
   fromDate: string
   toDate: string
   status: string
-  remarks?: string | null
+  days: number
 }
 
 export default function TeacherLeavesPage() {
   const [leaves, setLeaves] = useState<Leave[]>([])
+  const [loading, setLoading] = useState(false)
+
   const [form, setForm] = useState({
-    leaveType: "CASUAL",
+    leaveType: "",
     reason: "",
     fromDate: "",
-    toDate: ""
+    toDate: "",
   })
 
-  async function fetchLeaves() {
-    const res = await fetch("/api/leaves/my")
-    const data = await res.json()
-    setLeaves(data)
-  }
+  const [days, setDays] = useState<number>(0)
 
-  async function applyLeave(e: any) {
-    e.preventDefault()
+  // ---------- Auto-calc days ----------
+  useEffect(() => {
+    if (form.fromDate && form.toDate) {
+      const start = new Date(form.fromDate)
+      const end = new Date(form.toDate)
 
-    await fetch("/api/leaves/apply", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form)
-    })
+      if (end >= start) {
+        const diff =
+          Math.floor(
+            (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+          ) + 1
+        setDays(diff)
+      } else {
+        setDays(0)
+      }
+    } else {
+      setDays(0)
+    }
+  }, [form.fromDate, form.toDate])
 
-    setForm({ leaveType: "CASUAL", reason: "", fromDate: "", toDate: "" })
-    fetchLeaves()
+  // ---------- Fetch leave history ----------
+  const fetchLeaves = async () => {
+    try {
+      const res = await fetch("/api/leaves/my", { credentials: "include" })
+      if (!res.ok) return
+      const data = await res.json()
+      setLeaves(data)
+    } catch (err) {
+      console.error("Failed to fetch leaves:", err)
+    }
   }
 
   useEffect(() => {
     fetchLeaves()
   }, [])
 
+  // ---------- Submit leave ----------
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!form.leaveType || !form.fromDate || !form.toDate || !form.reason || days <= 0) {
+      alert("Please fill all required fields correctly")
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      const payload = {
+        leaveType: form.leaveType,
+        reason: form.reason,
+        fromDate: form.fromDate,
+        toDate: form.toDate,
+        days, // ✅ number (matches schema)
+      }
+
+      const res = await fetch("/api/leaves/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        alert(data.error || "Failed to apply leave")
+        return
+      }
+
+      setForm({ leaveType: "", reason: "", fromDate: "", toDate: "" })
+      setDays(0)
+      fetchLeaves()
+      alert("Leave applied successfully ✅")
+    } catch (err) {
+      console.error(err)
+      alert("Network or server error")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-green-700">Apply for Leave</h1>
+    <div className="p-8 bg-gray-50 min-h-screen">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold">Leave Application</h1>
+        <p className="text-gray-500 text-sm">
+          Apply for leave and view your leave history
+        </p>
+      </div>
 
-      <form onSubmit={applyLeave} className="space-y-4 mb-8 bg-white shadow rounded-lg p-6">
-        <select
-          value={form.leaveType}
-          onChange={e => setForm({ ...form, leaveType: e.target.value })}
-          className="border p-2 w-full rounded"
-        >
-          <option value="CASUAL">Casual</option>
-          <option value="SICK">Sick</option>
-          <option value="PAID">Paid</option>
-          <option value="UNPAID">Unpaid</option>
-        </select>
+      <div className="bg-white rounded-2xl shadow p-8 max-w-5xl">
+        <h2 className="text-lg font-semibold mb-6">Apply for Leave</h2>
 
-        <div className="flex gap-4">
-          <input
-            type="date"
-            value={form.fromDate}
-            onChange={e => setForm({ ...form, fromDate: e.target.value })}
-            className="border p-2 w-1/2 rounded"
-          />
-          <input
-            type="date"
-            value={form.toDate}
-            onChange={e => setForm({ ...form, toDate: e.target.value })}
-            className="border p-2 w-1/2 rounded"
-          />
-        </div>
-
-        <textarea
-          placeholder="Reason"
-          value={form.reason}
-          onChange={e => setForm({ ...form, reason: e.target.value })}
-          className="border p-2 w-full rounded"
-        />
-
-        <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
-          Apply Leave
-        </button>
-      </form>
-
-      <h2 className="text-2xl font-semibold mb-4 text-green-700">My Leaves</h2>
-
-      {leaves.length === 0 ? (
-        <p className="text-gray-500">No leaves applied yet</p>
-      ) : (
-        <div className="space-y-3">
-          {leaves.map(l => (
-            <div
-              key={l.id}
-              className="p-4 bg-white shadow rounded-lg border border-green-100 flex justify-between items-center hover:shadow-lg transition"
-            >
-              <div>
-                <div className="font-semibold">{l.leaveType}</div>
-                <div className="text-gray-500 text-sm">
-                  {l.fromDate.slice(0, 10)} to {l.toDate.slice(0, 10)}
-                </div>
-              </div>
-              <div>
-                <span
-                  className={`px-3 py-1 rounded-full font-semibold text-sm ${
-                    l.status === "APPROVED"
-                      ? "bg-green-200 text-green-800"
-                      : l.status === "REJECTED"
-                      ? "bg-red-200 text-red-800"
-                      : "bg-yellow-200 text-yellow-800"
-                  }`}
-                >
-                  {l.status}
-                </span>
-              </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="text-sm font-medium block mb-2">
+                Leave Type <span className="text-red-500">*</span>
+              </label>
+              <select
+                required
+                value={form.leaveType}
+                onChange={(e) => setForm({ ...form, leaveType: e.target.value })}
+                className="w-full bg-gray-100 px-4 py-3 rounded-lg text-sm"
+              >
+                <option value="">Select leave type</option>
+                <option value="CASUAL">Casual Leave</option>
+                <option value="SICK">Sick Leave</option>
+                <option value="PAID">Paid Leave</option>
+                <option value="UNPAID">Unpaid Leave</option>
+              </select>
             </div>
-          ))}
-        </div>
-      )}
+
+            <div>
+              <label className="text-sm font-medium block mb-2">
+                Number of Days
+              </label>
+              <input
+                readOnly
+                value={days || ""}
+                placeholder="Auto-calculated"
+                className="w-full bg-gray-100 px-4 py-3 rounded-lg text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <input
+              type="date"
+              required
+              value={form.fromDate}
+              onChange={(e) => setForm({ ...form, fromDate: e.target.value })}
+              className="w-full bg-gray-100 px-4 py-3 rounded-lg text-sm"
+            />
+
+            <input
+              type="date"
+              required
+              min={form.fromDate}
+              value={form.toDate}
+              onChange={(e) => setForm({ ...form, toDate: e.target.value })}
+              className="w-full bg-gray-100 px-4 py-3 rounded-lg text-sm"
+            />
+          </div>
+
+          <textarea
+            required
+            value={form.reason}
+            onChange={(e) => setForm({ ...form, reason: e.target.value })}
+            className="w-full bg-gray-100 px-4 py-4 rounded-lg h-28 text-sm"
+          />
+
+          <button
+            disabled={loading}
+            className={`px-6 py-3 rounded-lg text-white font-semibold ${
+              loading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"
+            }`}
+          >
+            {loading ? "Submitting..." : "Submit Leave Application"}
+          </button>
+        </form>
+      </div>
+
+      <div className="max-w-5xl mt-10">
+        <h3 className="text-lg font-semibold mb-4">My Leave Requests</h3>
+
+        {leaves.map((leave) => (
+          <div key={leave.id} className="bg-white p-4 rounded-xl shadow-sm flex justify-between">
+            <div>
+              <p className="font-medium">{leave.leaveType}</p>
+              <p className="text-sm text-gray-500">
+                {leave.fromDate.slice(0, 10)} → {leave.toDate.slice(0, 10)}
+              </p>
+              <p className="text-sm text-gray-500">Days: {leave.days}</p>
+            </div>
+
+            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+              {leave.status}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
