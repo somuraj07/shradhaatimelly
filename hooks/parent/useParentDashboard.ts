@@ -26,7 +26,7 @@ export function useParentDashboardData() {
   const [fees, setFees] = useState<any>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [teachers,setTeachers]=useState<any[]>([]);
-  const [feesAllRes,setFeesAllRes]=useState<StudentFeeApiResponse|null>(null);
+  const [feesAllRes,setFeesAllRes]=useState<StudentFeeApiResponse>();
 
 
   /* ---------------- DERIVED STATE ---------------- */

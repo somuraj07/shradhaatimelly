@@ -12,14 +12,27 @@ import ParentDashboard from "@/components/parent/dashboard/Dashboard";
 import { useParentDashboardData } from "@/hooks/parent/useParentDashboard";
 import ParentChatShell from "@/components/parent/chats/Chat";
 import FeesTab from "@/components/parent/fees/Fees";
+import { StudentFeeApiResponse } from "@/interfaces/student";
+import ParentMarks from "@/components/parent/marks/ParentMarks";
+import ParentCertificates from "@/components/parent/certificates/ParentCertificates";
 
 /* Parent pages */
 
 export default function ParentDashboardLayout() {
   const [open, setOpen] = useState(false);
   const tab = useSearchParams().get("tab") ?? "dashboard";
-  const { attendanceStats, homeworks, loading, appointments,teachers,fees,feesAllRes, reloadHomework ,reloadAppointments,reloadFee} =
-    useParentDashboardData();
+  const {
+    attendanceStats,
+    homeworks,
+    loading,
+    appointments,
+    teachers,
+    fees,
+    feesAllRes,
+    reloadHomework,
+    reloadAppointments,
+    reloadFee,
+  } = useParentDashboardData();
 
   const renderPage = () => {
     switch (tab) {
@@ -33,17 +46,25 @@ export default function ParentDashboardLayout() {
         );
       case "attendance":
         return <ParentAttendance attendanceStats={attendanceStats} />;
-      //   case "marks":
-      //     return <ParentMarks />;
-     case "chat":
-  return <ParentChatShell appointments={appointments} teachers={teachers} reloadAppointments={reloadAppointments} />;
+        case "marks":
+          return  <ParentMarks/>;
+      case "chat":
+        return (
+          <ParentChatShell
+            appointments={appointments}
+            teachers={teachers}
+            reloadAppointments={reloadAppointments}
+          />
+        );
 
       //   case "workshops":
       //     return <ParentWorkshops />;
-        case "fees":
-          return <FeesTab fee={fees} feesAllRes={feesAllRes} reloadFee={reloadFee} />;
-      //   case "certificates":
-      //     return <ParentCertificates />;
+      case "fees":
+        return (
+          <FeesTab fee={fees} feesAllRes={feesAllRes as StudentFeeApiResponse} reloadFee={reloadFee} />
+        );
+        case "certificates":
+          return <ParentCertificates />;
       default:
         return <ParentDashboard />;
     }
