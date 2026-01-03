@@ -171,7 +171,7 @@ model Class {
 
 model Student {
   id        String @id @default(cuid())
-
+ 
   // User relation
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
@@ -184,6 +184,7 @@ model Student {
   class   Class?  @relation(fields: [classId], references: [id])
 
   // Student Details
+  AdmissionNo String @unique
   fatherName String
   aadhaarNo  String @unique
   phoneNo    String

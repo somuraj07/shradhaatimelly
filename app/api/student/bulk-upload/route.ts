@@ -69,11 +69,12 @@ export async function POST(req: Request) {
           const phoneNo = String(row.phoneNo).replace(/\.0$/, "").trim();
           const aadhaarNo = String(row.aadhaarNo).replace(/\.0$/, "").trim();
           const address = row.address ? String(row.address).trim() : null;
+          const AdmissionNo = String(row.AdmissionNo || "").trim();
 
           const totalFee = Number(row.totalFee);
           const discountPercent = Number(row.discountPercent || 0);
 
-          if (!name || !fatherName || !phoneNo || !aadhaarNo || !row.dob) {
+          if (!name || !fatherName || !phoneNo || !aadhaarNo || !row.dob || !AdmissionNo) {
             throw new Error("Missing required fields");
           }
 
@@ -112,6 +113,7 @@ export async function POST(req: Request) {
               schoolId,
               dob: dobDate,
               address,
+              AdmissionNo,
               fatherName,
               aadhaarNo,
               phoneNo,

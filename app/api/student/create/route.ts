@@ -46,6 +46,7 @@ export async function POST(req: Request) {
       aadhaarNo,
       phoneNo,
       dob,
+      AdmissionNo,
       classId,
       address,
       totalFee,
@@ -53,9 +54,9 @@ export async function POST(req: Request) {
     } = await req.json();
 
     // Validate all required fields
-    if (!name || !dob || !fatherName || !aadhaarNo || !phoneNo) {
+    if (!name || !dob || !fatherName || !aadhaarNo || !phoneNo || !AdmissionNo) {
       return NextResponse.json(
-        { message: "Missing required fields: name, dob, fatherName, aadhaarNo, and phoneNo are required" },
+        { message: "Missing required fields: name, dob, fatherName, aadhaarNo, phoneNo and AdmissionNo are required" },
         { status: 400 }
       );
     }
@@ -73,6 +74,21 @@ export async function POST(req: Request) {
       if (existingUser) {
         return NextResponse.json(
           { message: "Email already exists in this school" },
+          { status: 409 }
+        );
+      }
+    }
+    if(AdmissionNo) {
+      const existingAdmission =  await prisma.student.findFirst({
+        where: {
+          AdmissionNo,
+          schoolId,
+        },
+        select: { id: true },
+      });
+      if (existingAdmission) {
+        return NextResponse.json(
+          { message: "Admission Number already exists in this school" },
           { status: 409 }
         );
       }
@@ -135,6 +151,7 @@ export async function POST(req: Request) {
             classId: classId ?? null,
             dob: dobDate,
             address,
+            AdmissionNo,
             fatherName,
             aadhaarNo,
             phoneNo,
@@ -205,3 +222,4 @@ export async function POST(req: Request) {
     );
   }
 }
+
