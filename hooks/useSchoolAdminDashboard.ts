@@ -61,8 +61,8 @@ export function useDashboardData() {
     setAttendance(
       calculateTodayAttendance(
         attendanceRaw,
-        teachers,
-        teacherLeaves
+        teachers.length ? teachers : [],
+        teacherLeaves.length ? teacherLeaves : []
       )
     );
   }, [attendanceRaw, teachers, teacherLeaves]);

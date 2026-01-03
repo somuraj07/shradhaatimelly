@@ -1,20 +1,40 @@
 "use client";
 
-import { CreditCard } from "lucide-react";
+import { CreditCard, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "@/services/toast/toast.service";
+import { generateFeeReceipt } from "./parent/fees/utils";
+import { StudentFeeApiResponse } from "@/interfaces/student";
+import { MAIN_COLOR } from "@/constants/colors";
+
 
 interface PayButtonProps {
   amount: number;
+  feesAllRes: StudentFeeApiResponse;
   onSuccess?: () => void;
+  onFailure?: () => void;
+  onStart?: () => void;
+  disabled?: boolean;
+  loading?: boolean;
 }
 
-export default function PayButton({ amount, onSuccess }: PayButtonProps) {
+export default function PayButton({
+  amount,
+  onSuccess,
+  onFailure,
+  onStart,
+  disabled,
+  loading,
+  feesAllRes,
+}: PayButtonProps) {
   const payNow = async () => {
+    if (disabled || loading) return;
+
     try {
-      // Ensure amount sent to backend is at most 2 decimal places
+      onStart?.();
+
       const normalizedAmount = Number(amount.toFixed(2));
 
-      // 1️⃣ Create order
       const res = await fetch("/api/payment/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -22,21 +42,20 @@ export default function PayButton({ amount, onSuccess }: PayButtonProps) {
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        console.error("Order creation failed:", errorData);
-        alert(`Failed to create order: ${errorData.error || errorData.message || "Unknown error"}`);
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.message || "Failed to create order");
+        onFailure?.();
         return;
       }
 
       const order = await res.json();
 
-      // 2️⃣ Check Razorpay SDK
       if (!(window as any).Razorpay) {
-        alert("Razorpay SDK not loaded");
+        toast.error("Razorpay SDK not loaded");
+        onFailure?.();
         return;
       }
 
-      // 3️⃣ Open Razorpay portal
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
         amount: order.amount,
@@ -45,8 +64,6 @@ export default function PayButton({ amount, onSuccess }: PayButtonProps) {
         name: "Timely Project",
         description: "Complete your payment",
         handler: async (response: any) => {
-          console.log("Payment success", response);
-
           try {
             const verifyRes = await fetch("/api/payment/verify", {
               method: "POST",
@@ -62,40 +79,62 @@ export default function PayButton({ amount, onSuccess }: PayButtonProps) {
             const data = await verifyRes.json();
 
             if (!verifyRes.ok) {
-              console.error("Payment verification failed:", data);
-              alert(data.message || "Payment verification failed");
+              toast.error(data.message || "Payment verification failed");
+              onFailure?.();
               return;
             }
 
-            alert("Payment successful!");
-            if (onSuccess) {
-              onSuccess();
-            }
-          } catch (err) {
-            console.error("Payment verification error:", err);
-            alert("Payment verification failed");
+            toast.success("Payment successful!");
+            generateFeeReceipt({
+              payment: data.payment,
+              student: feesAllRes.student,
+              school: feesAllRes.school,
+            });
+            onSuccess?.();
+          } catch {
+            toast.error("Verification failed");
+            onFailure?.();
           }
         },
-        theme: { color: "#16a34a" },
+        modal: {
+          ondismiss: () => onFailure?.(),
+        },
+        theme: { color: `${MAIN_COLOR}` },
       };
 
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
-    } catch (err) {
-      console.error(err);
-      alert("Payment failed");
+    } catch {
+      toast.error("Payment failed");
+      onFailure?.();
     }
   };
 
   return (
     <motion.button
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.97 }}
+      whileHover={!disabled && !loading ? { scale: 1.02 } : undefined}
+      whileTap={!disabled && !loading ? { scale: 0.97 } : undefined}
       onClick={payNow}
-      className="w-full bg-green-600 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-md hover:bg-green-700 transition"
+      disabled={disabled || loading}
+      style={{backgroundColor:`${MAIN_COLOR}`}}
+      className="
+        w-full text-white py-4 rounded-xl font-semibold
+        flex items-center justify-center gap-2 shadow-md
+        hover:bg-green-700 transition
+        disabled:opacity-60 disabled:cursor-not-allowed
+      "
     >
-      <CreditCard size={20} />
-      Pay ₹{amount}
+      {loading ? (
+        <>
+          <Loader2 className="animate-spin" size={20} />
+          Processing...
+        </>
+      ) : (
+        <>
+          <CreditCard size={20} />
+          Pay ₹{amount}
+        </>
+      )}
     </motion.button>
   );
 }

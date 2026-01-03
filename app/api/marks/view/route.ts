@@ -27,56 +27,76 @@ export async function GET(req: Request) {
 
     const where: any = {
       class: {
-        schoolId: schoolId,
+        schoolId,
       },
     };
-
-    // For students: only show their own marks
     if (session.user.studentId) {
       where.studentId = session.user.studentId;
     } else {
-      // For teachers/admins: can filter by student or class
-      if (studentId) {
-        where.studentId = studentId;
-      }
-      if (classId) {
-        where.classId = classId;
-      }
+
+      if (studentId) where.studentId = studentId;
+      if (classId) where.classId = classId;
     }
 
     if (subject) {
       where.subject = subject;
     }
 
-  const marks = await prisma.mark.findMany({
-    where,
-    include: {
-      student: session.user.studentId ? undefined : {
-        include: {
-          user: {
-            select: { id: true, name: true, email: true },
+    const marks = await prisma.mark.findMany({
+      where,
+      include: {
+        student: session.user.studentId ? undefined : {
+          include: {
+            user: {
+              select: { id: true, name: true, email: true },
+            },
           },
         },
-      },
-      exam: {
-        select: {
-          id: true,
-          name: true,
+        class: {
+          select: { id: true, name: true, section: true },
+        },
+        teacher: {
+          select: { id: true, name: true, email: true },
         },
       },
-      class: {
-        select: { id: true, name: true, section: true },
+      orderBy: {
+        createdAt: "desc",
       },
-      teacher: {
-        select: { id: true, name: true, email: true },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+    });
 
-    return NextResponse.json({ marks }, { status: 200 });
+
+    let classTotals: { studentId: string; totalObtained: number }[] = [];
+
+    const resolvedClassId =
+      classId ??
+      marks.find((m) => m.classId)?.classId ??
+      null;
+
+    if (resolvedClassId) {
+      const totals = await prisma.mark.groupBy({
+        by: ["studentId"],
+        where: {
+          classId: resolvedClassId,
+        },
+        _sum: {
+          marks: true,
+        },
+      });
+
+      classTotals = totals.map((t) => ({
+        studentId: t.studentId!,
+        totalObtained: t._sum.marks || 0,
+      }));
+    }
+
+    return NextResponse.json(
+      {
+        marks,
+        classTotals,
+        currentStudentId: session.user.studentId || null,
+      },
+      { status: 200 }
+    );
   } catch (error: any) {
     console.error("View marks error:", error);
     return NextResponse.json(

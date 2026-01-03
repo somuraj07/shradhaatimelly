@@ -1,22 +1,43 @@
 "use client";
 
 import { useState } from "react";
-import { Menu } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
 import SchoolAdminSideBar from "@/components/layout/SchoolAdminSideBar";
 import { PARENT_MENU_ITEMS } from "@/constants/parent/sidebar";
+
+import ParentDashboard from "@/components/parent/dashboard/Dashboard";
 import ParentHomework from "@/components/parent/homework/Homework";
 import ParentAttendance from "@/components/parent/attendance/Attendance";
-import ParentDashboard from "@/components/parent/dashboard/Dashboard";
-import { useParentDashboardData } from "@/hooks/parent/useParentDashboard";
+import ParentChatShell from "@/components/parent/chats/Chat";
+import FeesTab from "@/components/parent/fees/Fees";
+import ParentMarks from "@/components/parent/marks/ParentMarks";
+import ParentCertificates from "@/components/parent/certificates/ParentCertificates";
 
-/* Parent pages */
+
+import { useParentDashboardData } from "@/hooks/parent/useParentDashboard";
+import { StudentFeeApiResponse } from "@/interfaces/student";
+import MobileBottomNav from "@/components/ui/parentportal/MobileBottomBar";
+import MobileRadialMenu from "@/components/ui/parentportal/MobileRadialMenu";
+import MobileTopBar from "@/components/ui/parentportal/MobileTopBar";
+
 
 export default function ParentDashboardLayout() {
-  const [open, setOpen] = useState(false);
   const tab = useSearchParams().get("tab") ?? "dashboard";
-  const { attendanceStats ,homeworks,loading,reloadHomework} = useParentDashboardData();
+  const [radialOpen, setRadialOpen] = useState(false);
+
+  const {
+    attendanceStats,
+    homeworks,
+    loading,
+    appointments,
+    teachers,
+    fees,
+    feesAllRes,
+    reloadHomework,
+    reloadAppointments,
+    reloadFee,
+  } = useParentDashboardData();
 
   const renderPage = () => {
     switch (tab) {
@@ -24,58 +45,47 @@ export default function ParentDashboardLayout() {
         return <ParentHomework homeworks={homeworks} loading={loading} reloadHomework={reloadHomework} />;
       case "attendance":
         return <ParentAttendance attendanceStats={attendanceStats} />;
-    //   case "marks":
-    //     return <ParentMarks />;
-    //   case "chat":
-    //     return <ParentChat />;
-    //   case "workshops":
-    //     return <ParentWorkshops />;
-    //   case "fees":
-    //     return <ParentFees />;
-    //   case "certificates":
-    //     return <ParentCertificates />;
+      case "marks":
+        return <ParentMarks />;
+      case "chat":
+        return <ParentChatShell appointments={appointments} teachers={teachers} reloadAppointments={reloadAppointments} />;
+      case "fees":
+        return <FeesTab fee={fees} feesAllRes={feesAllRes as StudentFeeApiResponse} reloadFee={reloadFee} />;
+      case "certificates":
+        return <ParentCertificates />;
       default:
         return <ParentDashboard />;
     }
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
+    <div className="flex h-screen bg-[#f8fafc] overflow-hidden">
       
       {/* ===== DESKTOP SIDEBAR ===== */}
       <aside className="hidden md:block">
         <SchoolAdminSideBar menuItems={PARENT_MENU_ITEMS} />
       </aside>
 
-      {/* ===== MOBILE SIDEBAR ===== */}
-      {open && (
-        <div className="fixed inset-0 z-50 flex md:hidden">
-          <div className="w-64 bg-white shadow-lg">
-            <SchoolAdminSideBar
-              menuItems={PARENT_MENU_ITEMS}
-              onClose={() => setOpen(false)}
-            />
-          </div>
-          <div
-            className="flex-1 bg-black/40"
-            onClick={() => setOpen(false)}
-          />
-        </div>
-      )}
-
-      {/* ===== MAIN CONTENT ===== */}
-      <div className="flex-1 flex flex-col">
-        {/* Mobile Top Bar */}
-        <div className="md:hidden flex items-center gap-3 p-4 bg-white shadow-sm">
-          <button onClick={() => setOpen(true)}>
-            <Menu />
-          </button>
-          <h1 className="font-semibold">Parent Portal</h1>
+      {/* ===== MAIN ===== */}
+      <div className="flex-1 flex flex-col relative">
+        
+        {/* MOBILE TOP BAR */}
+        <div className="md:hidden">
+          <MobileTopBar />
         </div>
 
-        <main className="p-4 md:p-6 flex-1 overflow-y-auto">
+        {/* CONTENT */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-6">
           {renderPage()}
         </main>
+
+        {/* MOBILE BOTTOM NAV */}
+        <div className="md:hidden">
+          <MobileBottomNav onMore={() => setRadialOpen(true)} />
+        </div>
+
+        {/* RADIAL MENU */}
+        {radialOpen && <MobileRadialMenu onClose={() => setRadialOpen(false)} />}
       </div>
     </div>
   );

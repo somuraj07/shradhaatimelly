@@ -24,16 +24,23 @@ export default function LeaveActionButtons({
             ? `/api/tc/${id}/approve`
             : `/api/leaves/${id}/approve`
           : isTCApprovalsPage
-          ? `/api/tc/${id}/reject`
-          : `/api/leaves/${id}/reject`;
+            ? `/api/tc/${id}/reject`
+            : `/api/leaves/${id}/reject`;
 
       const res = await fetch(url, {
         method: isTCApprovalsPage ? "POST" : "PATCH",
+        headers: isTCApprovalsPage
+          ? { "Content-Type": "application/json" }
+          : undefined,
+        body: isTCApprovalsPage
+          ? JSON.stringify({ tcDocumentUrl: null })
+          : undefined,
       });
+
 
       if (!res.ok) throw new Error("Action failed");
 
-      toast.success(`Leave ${type}d`);
+      isTCApprovalsPage ? toast.success(`TC ${type}d`) : toast.success(`Leave ${type}d`);
       onSuccess();
     } catch {
       toast.error("Something went wrong. Please try again.");

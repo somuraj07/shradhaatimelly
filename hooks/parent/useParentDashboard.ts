@@ -4,6 +4,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useStudentContext } from "@/context/StudentContext";
 import { parentApi } from "@/services/parent/parent.api";
 import { safeArray } from "../useSchoolAdminDashboard";
+import { api } from "@/services/schooladmin/dashboard/dashboard.api";
+import { set } from "date-fns";
+import { StudentFeeApiResponse } from "@/interfaces/student";
 
 export function useParentDashboardData() {
   const { activeStudent } = useStudentContext();
@@ -22,6 +25,9 @@ export function useParentDashboardData() {
   const [certificates, setCertificates] = useState<any[]>([]);
   const [fees, setFees] = useState<any>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
+  const [teachers,setTeachers]=useState<any[]>([]);
+  const [feesAllRes,setFeesAllRes]=useState<StudentFeeApiResponse>();
+
 
   /* ---------------- DERIVED STATE ---------------- */
   const [attendanceStats, setAttendanceStats] = useState({
@@ -77,6 +83,7 @@ const recalculateAttendance = useCallback(() => {
         certificatesRes,
         feesRes,
         appointmentsRes,
+        teachersRes
       ] = await Promise.all([
         parentApi.homeworks(studentId),
         parentApi.attendance(studentId),
@@ -85,7 +92,8 @@ const recalculateAttendance = useCallback(() => {
         parentApi.certificates(studentId),
         parentApi.fees(studentId),
         parentApi.appointments(),
-      ]);
+        api.teachers()
+      ]); 
 
       setHomeworks(safeArray(homeworkRes?.homeworks));
       setAttendanceRaw(safeArray(attendanceRes?.attendances));
@@ -93,8 +101,9 @@ const recalculateAttendance = useCallback(() => {
       setEvents(safeArray(eventsRes?.events));
       setCertificates(safeArray(certificatesRes?.certificates));
       setFees(feesRes?.fee ?? null);
+      setFeesAllRes(feesRes as StudentFeeApiResponse);
       setAppointments(safeArray(appointmentsRes?.appointments));
-
+      setTeachers(safeArray(teachersRes?.teachers));
     } catch {
       setError({
         message: "Failed to load parent dashboard data",
@@ -128,6 +137,17 @@ useEffect(() => {
     setHomeworks(safeArray(res?.homeworks));
   };
 
+  const reloadFee = async () => {
+    const res = await parentApi.fees(activeStudent?.id);
+    setFeesAllRes(res as StudentFeeApiResponse);
+    setFees(res?.fee ?? null);
+  };
+
+  const reloadAppointments = async () => {
+    const res = await parentApi.appointments();
+    setAppointments(safeArray(res?.appointments));
+  }
+
   const reloadAttendance = async () => {
     const res = await parentApi.attendance(activeStudent?.id);
     setAttendanceRaw(safeArray(res?.attendances));
@@ -152,6 +172,8 @@ useEffect(() => {
     certificates,
     fees,
     appointments,
+    teachers,
+    feesAllRes,
 
     // derived
     attendanceStats,
@@ -161,5 +183,7 @@ useEffect(() => {
     reloadHomework,
     reloadAttendance,
     reloadMarks,
+    reloadAppointments,
+    reloadFee
   };
 }

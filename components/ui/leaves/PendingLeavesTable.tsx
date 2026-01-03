@@ -57,7 +57,7 @@ export default function PendingLeavesTable({
     },
     {
       header: "Roll No",
-      render: (row: any) => row.student?.class.rollNo ?? "-",
+      render: (row: any) => row.student?.rollNo ?? "-",
     },
     {
       header: "Reason",

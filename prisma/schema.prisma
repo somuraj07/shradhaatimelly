@@ -103,7 +103,7 @@ model LeaveRequest {
 
   leaveType LeaveType
   reason    String   @db.Text
-  days     Int
+  days     String
   fromDate DateTime
   toDate   DateTime
 
