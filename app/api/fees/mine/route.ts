@@ -18,18 +18,45 @@ export async function GET() {
   }
 
   try {
-    const fee = await prisma.studentFee.findUnique({
-      where: { studentId: session.user.studentId },
+    const student = await prisma.student.findUnique({
+      where: { id: session.user.studentId },
+      include: {
+        fee: true,
+        payments: {
+          orderBy: { createdAt: "desc" },
+        },
+        user: {
+          select: { name: true, email: true },
+        },
+        class: {
+          select: { name: true, section: true },
+        },
+        school: {
+          select: {
+            name: true,
+            address: true,
+            city: true,
+            state: true,
+            pincode: true,
+          },
+        },
+      },
     });
 
-    if (!fee) {
+    if (!student || !student.fee) {
       return NextResponse.json(
         { message: "Fee details not found for this student" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ fee });
+    return NextResponse.json({
+      fee: student.fee,          
+      student: student.user,     
+      class: student.class,      
+      school: student.school,   
+      payments: student.payments 
+    });
   } catch (error: any) {
     console.error("Fetch student fee error:", error);
     return NextResponse.json(
@@ -38,4 +65,3 @@ export async function GET() {
     );
   }
 }
-

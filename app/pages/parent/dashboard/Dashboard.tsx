@@ -10,30 +10,40 @@ import ParentHomework from "@/components/parent/homework/Homework";
 import ParentAttendance from "@/components/parent/attendance/Attendance";
 import ParentDashboard from "@/components/parent/dashboard/Dashboard";
 import { useParentDashboardData } from "@/hooks/parent/useParentDashboard";
+import ParentChatShell from "@/components/parent/chats/Chat";
+import FeesTab from "@/components/parent/fees/Fees";
 
 /* Parent pages */
 
 export default function ParentDashboardLayout() {
   const [open, setOpen] = useState(false);
   const tab = useSearchParams().get("tab") ?? "dashboard";
-  const { attendanceStats ,homeworks,loading,reloadHomework} = useParentDashboardData();
+  const { attendanceStats, homeworks, loading, appointments,teachers,fees,feesAllRes, reloadHomework ,reloadAppointments,reloadFee} =
+    useParentDashboardData();
 
   const renderPage = () => {
     switch (tab) {
       case "homework":
-        return <ParentHomework homeworks={homeworks} loading={loading} reloadHomework={reloadHomework} />;
+        return (
+          <ParentHomework
+            homeworks={homeworks}
+            loading={loading}
+            reloadHomework={reloadHomework}
+          />
+        );
       case "attendance":
         return <ParentAttendance attendanceStats={attendanceStats} />;
-    //   case "marks":
-    //     return <ParentMarks />;
-    //   case "chat":
-    //     return <ParentChat />;
-    //   case "workshops":
-    //     return <ParentWorkshops />;
-    //   case "fees":
-    //     return <ParentFees />;
-    //   case "certificates":
-    //     return <ParentCertificates />;
+      //   case "marks":
+      //     return <ParentMarks />;
+     case "chat":
+  return <ParentChatShell appointments={appointments} teachers={teachers} reloadAppointments={reloadAppointments} />;
+
+      //   case "workshops":
+      //     return <ParentWorkshops />;
+        case "fees":
+          return <FeesTab fee={fees} feesAllRes={feesAllRes} reloadFee={reloadFee} />;
+      //   case "certificates":
+      //     return <ParentCertificates />;
       default:
         return <ParentDashboard />;
     }
@@ -41,7 +51,6 @@ export default function ParentDashboardLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
-      
       {/* ===== DESKTOP SIDEBAR ===== */}
       <aside className="hidden md:block">
         <SchoolAdminSideBar menuItems={PARENT_MENU_ITEMS} />
@@ -56,10 +65,7 @@ export default function ParentDashboardLayout() {
               onClose={() => setOpen(false)}
             />
           </div>
-          <div
-            className="flex-1 bg-black/40"
-            onClick={() => setOpen(false)}
-          />
+          <div className="flex-1 bg-black/40" onClick={() => setOpen(false)} />
         </div>
       )}
 
