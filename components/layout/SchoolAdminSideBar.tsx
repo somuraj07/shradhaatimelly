@@ -93,7 +93,7 @@ export default function SchoolAdminSideBar({
         </div>
       </div>
 
-      {/* 🧭 SIDEBAR MENU */}
+      {/* SIDEBAR MENU */}
       <div className="flex-1 px-3 py-4 overflow-y-auto">
         {menuItems.map((item) => {
           const isActive = item.tab === activeTab;
