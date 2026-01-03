@@ -3,9 +3,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Edit2, Trash2, Search, Plus, 
-  X, ChevronDown, Save, User 
+import {
+  Edit2, Trash2, Search, Plus,
+  X, ChevronDown, Save, User
 } from "lucide-react";
 
 /* ================= TYPES ================= */
@@ -29,6 +29,7 @@ interface Mark {
   grade: string | null;
   suggestions: string | null;
   createdAt: string;
+  exam?: { id: string; name: string };
   class: { id: string; name: string; section: string | null };
   teacher?: { name: string | null; subject?: string };
   student?: { id: string; user: { name: string | null } };
@@ -36,7 +37,7 @@ interface Mark {
 
 export default function MarksPage() {
   const { data: session, status } = useSession();
-  
+
   // State
   const [editingMarkId, setEditingMarkId] = useState<string | null>(null);
   const [classes, setClasses] = useState<Class[]>([]);
@@ -46,6 +47,9 @@ export default function MarksPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [exams, setExams] = useState<{ id: string; name: string }[]>([]);
+  const [selectedExam, setSelectedExam] = useState("");
+  const [examFilter, setExamFilter] = useState("");
 
   const [form, setForm] = useState({
     studentId: "",
@@ -58,7 +62,7 @@ export default function MarksPage() {
   const [selectedStudent, setSelectedStudent] = useState("");
 
   // Teacher Subject Logic
-const teacherSubject = (session?.user as any)?.subjectsTaught ;
+  const teacherSubject = (session?.user as any)?.subjectsTaught;
 
   /* ================= FETCHING ================= */
 
@@ -68,6 +72,11 @@ const teacherSubject = (session?.user as any)?.subjectsTaught ;
       if (session.user.role === "TEACHER") fetchClasses();
     }
   }, [session]);
+  useEffect(() => {
+    fetch("/api/exams/list")
+      .then(res => res.json())
+      .then(data => setExams(data.exams || []));
+  }, []);
 
   useEffect(() => {
     if (selectedClass) fetchStudents();
@@ -99,22 +108,31 @@ const teacherSubject = (session?.user as any)?.subjectsTaught ;
   /* ================= HANDLERS ================= */
 
   const filteredMarks = useMemo(() => {
-    return marks.filter(m => 
-      m.student?.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.subject.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [marks, searchQuery]);
+    return marks.filter((m) => {
+      const matchesSearch =
+        m.student?.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.subject.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesExam =
+        !examFilter || m.exam?.id === examFilter;
+
+      return matchesSearch && matchesExam;
+    });
+  }, [marks, searchQuery, examFilter]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload = {
       classId: selectedClass,
       studentId: selectedStudent,
-      subject: editingMarkId ? form.subject : teacherSubject, // Locked to teacher subject on create
+      subject: teacherSubject,
+      examId: selectedExam,
       marks: Number(form.marks),
       totalMarks: Number(form.totalMarks),
       suggestions: form.suggestions || null,
     };
+
 
     const url = editingMarkId ? `/api/marks/${editingMarkId}` : "/api/marks/create";
     const method = editingMarkId ? "PUT" : "POST";
@@ -141,11 +159,11 @@ const teacherSubject = (session?.user as any)?.subjectsTaught ;
   const getGradeStyle = (grade: string | null) => {
     switch (grade) {
       case 'A+': return 'bg-[#33b663] text-white';
-      case 'A':  return 'bg-[#33b663] text-white';
-      case 'B':  return 'bg-green-200 text-white';
-      case 'C':  return 'bg-yellow-400 text-white';
-      case 'D':  return 'bg-red-400 text-white';
-      default:   return 'bg-gray-300 text-gray-700';
+      case 'A': return 'bg-[#33b663] text-white';
+      case 'B': return 'bg-green-200 text-white';
+      case 'C': return 'bg-yellow-400 text-white';
+      case 'D': return 'bg-red-400 text-white';
+      default: return 'bg-gray-300 text-gray-700';
     }
   };
 
@@ -213,6 +231,21 @@ const teacherSubject = (session?.user as any)?.subjectsTaught ;
               className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-12 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#33b663]/20"
             />
           </div>
+          <div className="flex gap-3 w-full md:w-auto">
+            <select
+              value={examFilter}
+              onChange={(e) => setExamFilter(e.target.value)}
+              className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none"
+            >
+              <option value="">All Exams</option>
+              {exams.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
         </div>
 
         <div className="overflow-x-auto">
@@ -222,6 +255,7 @@ const teacherSubject = (session?.user as any)?.subjectsTaught ;
                 <th className="px-6 py-4">Roll No</th>
                 <th className="px-6 py-4">Student Name</th>
                 <th className="px-6 py-4">Subject</th>
+                <th className="px-6 py-4">exam</th>
                 <th className="px-6 py-4 text-center">Marks</th>
                 <th className="px-6 py-4 text-center">Total</th>
                 <th className="px-6 py-4 text-center">Grade</th>
@@ -235,6 +269,10 @@ const teacherSubject = (session?.user as any)?.subjectsTaught ;
                   <td className="px-6 py-4 text-gray-500 font-medium">#{m.student?.id.slice(-4)}</td>
                   <td className="px-6 py-4 font-bold text-gray-900">{m.student?.user?.name}</td>
                   <td className="px-6 py-4 text-gray-600">{m.subject}</td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {m.exam?.name || "-"}
+                  </td>
+
                   <td className="px-6 py-4 text-center font-bold text-[#33b663]">{m.marks}</td>
                   <td className="px-6 py-4 text-center text-gray-400">{m.totalMarks}</td>
                   <td className="px-6 py-4 text-center">
@@ -266,7 +304,7 @@ const teacherSubject = (session?.user as any)?.subjectsTaught ;
       <AnimatePresence>
         {showAdd && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               className="bg-white rounded-[32px] shadow-2xl p-8 w-full max-w-md overflow-hidden relative"
@@ -274,7 +312,7 @@ const teacherSubject = (session?.user as any)?.subjectsTaught ;
               <button onClick={() => setShowAdd(false)} className="absolute right-6 top-6 text-gray-400 hover:text-gray-600">
                 <X size={24} />
               </button>
-              
+
               <h2 className="text-2xl font-black text-gray-900 mb-8">
                 {editingMarkId ? 'Update Marks' : `Add ${teacherSubject} Marks`}
               </h2>
@@ -317,6 +355,24 @@ const teacherSubject = (session?.user as any)?.subjectsTaught ;
                       <option value="50">50</option>
                     </select>
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">
+                    Exam
+                  </label>
+                  <select
+                    required
+                    value={selectedExam}
+                    onChange={(e) => setSelectedExam(e.target.value)}
+                    className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100"
+                  >
+                    <option value="">Select Exam</option>
+                    {exams.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="space-y-2">

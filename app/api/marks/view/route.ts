@@ -48,27 +48,33 @@ export async function GET(req: Request) {
       where.subject = subject;
     }
 
-    const marks = await prisma.mark.findMany({
-      where,
-      include: {
-        student: session.user.studentId ? undefined : {
-          include: {
-            user: {
-              select: { id: true, name: true, email: true },
-            },
+  const marks = await prisma.mark.findMany({
+    where,
+    include: {
+      student: session.user.studentId ? undefined : {
+        include: {
+          user: {
+            select: { id: true, name: true, email: true },
           },
         },
-        class: {
-          select: { id: true, name: true, section: true },
-        },
-        teacher: {
-          select: { id: true, name: true, email: true },
+      },
+      exam: {
+        select: {
+          id: true,
+          name: true,
         },
       },
-      orderBy: {
-        createdAt: "desc",
+      class: {
+        select: { id: true, name: true, section: true },
       },
-    });
+      teacher: {
+        select: { id: true, name: true, email: true },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
     return NextResponse.json({ marks }, { status: 200 });
   } catch (error: any) {

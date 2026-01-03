@@ -23,11 +23,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { studentId, classId, subject, marks, totalMarks, suggestions } = await req.json();
+    const { studentId, classId, subject, marks, totalMarks, suggestions, examId  } = await req.json();
 
-    if (!studentId || !classId || !subject || marks === undefined || totalMarks === undefined) {
+    if (!studentId || !classId || !subject || marks === undefined || totalMarks === undefined || !examId) {
       return NextResponse.json(
-        { message: "Missing required fields: studentId, classId, subject, marks, totalMarks" },
+        { message: "Missing required fields: studentId, classId, subject, marks, totalMarks, examId" },
         { status: 400 }
       );
     }
@@ -92,6 +92,7 @@ export async function POST(req: Request) {
         grade,
         suggestions: suggestions || null,
         teacherId,
+        examId,
       },
       include: {
         student: {

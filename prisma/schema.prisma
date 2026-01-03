@@ -282,31 +282,50 @@ model Attendance {
 // =====================
 // Marks/Grades Model
 // =====================
-
-model Mark {
+model Exam {
   id        String   @id @default(cuid())
-  subject   String
-  marks     Float
-  totalMarks Float
-  grade     String?  // "A+", "A", "B+", "B", "C", "D", "F"
-  suggestions String? @db.Text // Teacher's comments/suggestions
-  
-  // Relations
-  studentId String
-  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  
-  classId   String
-  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  
-  teacherId String
-  teacher   User     @relation("TeacherMarks", fields: [teacherId], references: [id], onDelete: Cascade)
-  
+  name      String   // "Unit Test 1", "Mid Term", "Final"
+  schoolId  String
+  isActive  Boolean  @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
+  marks     Mark[]
+}
+
+
+model Mark {
+  id           String   @id @default(cuid())
+
+  subject      String
+  marks        Float
+  totalMarks   Float
+  grade        String?
+  suggestions  String? @db.Text
+
+  // 🔑 Exam relation (Admin-defined)
+  examId       String
+  exam         Exam @relation(fields: [examId], references: [id])
+
+  // Relations
+  studentId    String
+  student      Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  classId      String
+  class        Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  teacherId    String
+  teacher      User @relation("TeacherMarks", fields: [teacherId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
   @@index([studentId])
   @@index([classId])
+  @@index([examId])
 }
+
 
 // =====================
 // Events/Workshops Model
