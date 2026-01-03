@@ -68,7 +68,7 @@ export default function PendingRequests({ refreshKey }: { refreshKey: number }) 
           >
             <div className="flex justify-between items-start">
               <p className="font-medium text-gray-700">
-                Transfer Certificate
+                
               </p>
 
               {item.status === "PENDING" ? (

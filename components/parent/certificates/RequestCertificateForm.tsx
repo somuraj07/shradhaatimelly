@@ -64,11 +64,11 @@ export default function RequestCertificateForm({
                     onChange={(e) => setCertificateType(e.target.value)}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
                 >
-                    <option>Bonafide Certificate</option>
-                    <option>Character Certificate</option>
-                    <option>Transfer Certificate</option>
-                    <option>Conduct Certificate</option>
-                    <option>Attendance Certificate</option>
+                    <option value="Bonafide Certificate">Bonafide Certificate</option>
+                    <option value="Character Certificate">Character Certificate</option>
+                    <option value="Transfer Certificate">Transfer Certificate</option>
+                    <option value="Conduct Certificate">Conduct Certificate</option>
+                    <option value="Attendance Certificate">Attendance Certificate</option>
                 </select>
 
                 <textarea

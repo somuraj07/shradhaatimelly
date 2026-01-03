@@ -39,12 +39,12 @@ export async function POST(req: Request) {
       },
     });
 
-    if (existingTC) {
-      return NextResponse.json(
-        { message: "You already have a pending or approved TC request" },
-        { status: 400 }
-      );
-    }
+    // if (existingTC) {
+    //   return NextResponse.json(
+    //     { message: "You already have a pending or approved TC request" },
+    //     { status: 400 }
+    //   );
+    // }
 
     const tc = await prisma.transferCertificate.create({
       data: {
